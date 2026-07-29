@@ -4,7 +4,10 @@
 > このドキュメント一式の承認をもって、実装フェーズへ移行します。
 
 本ディレクトリは、SecureAI Studio の実装に先立つ設計一式です。
-「設計ファースト」の方針に基づき、**コードを書く前に** 以下 10 項目を定義しています。
+「設計ファースト」の方針に基づき、**コードを書く前に** 基本 10 項目 + 拡張設計 5 項目を定義しています。
+
+> **位置付け**: SecureAI Studio は **AI Security Platform**（共通 PII 保護レイヤー）であり、AI 提供サービスではない。
+> 中核思想「**AI へ送る前に、必ず SecureAI を通す**」は [PRD](../PRD.md)・README・本設計に一貫して反映。
 
 ## 目次
 
@@ -20,6 +23,18 @@
 | ⑧ | [MVP 定義](./08-mvp.md) | スコープ In/Out / 受け入れ基準 / 成功指標 |
 | ⑨ | [セキュリティ設計](./09-security-design.md) | データ保護 / 秘密情報管理 / 脅威モデル / コンプライアンス |
 | ⑩ | [ライブラリ構成](./10-library-stack.md) | 依存ライブラリ / 環境変数 / ツールチェーン |
+
+### 拡張設計（レビュー依頼で追補）
+
+| # | ドキュメント | 対応依頼 | 内容 |
+| --- | --- | --- | --- |
+| 11 | [Provider Interface](./11-provider-interface.md) | ④ | LLM プロバイダー抽象化（Gemini→Claude/OpenAI/DeepSeek/Grok/Local） |
+| 12 | [SDK 設計](./12-sdk-design.md) | ⑥ | JS / Python / Node SDK と API 適合確認 |
+| 13 | [Export Module](./13-export-module.md) | ⑦ | Claude Code / Codex / Cursor / Windsurf 向けプロンプト生成 |
+| 14 | [Plugin Architecture](./14-plugin-architecture.md) | ⑪ | MCP/Webhook/Streaming/Batch/PDF/OCR/Audio/RAG を後付け |
+| 15 | [Protect Playground](./15-protect-playground.md) | 追加機能 | 導入前検証・デモ画面（差別化） |
+
+> プロダクト全体の思想・位置付けは [PRD](../PRD.md) を参照。
 
 ## 設計の 3 原則
 

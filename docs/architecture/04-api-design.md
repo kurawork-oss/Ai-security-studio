@@ -75,8 +75,10 @@ PII を検出・匿名化し、マスク済みテキストを返す。
 | `GET/POST` | `/v1/providers/{id}/keys` | プロバイダーキー一覧 / 登録（暗号化保存） |
 | `POST` | `/v1/providers/{id}/keys/{keyId}/rotate` | キーのローテーション |
 | `DELETE` | `/v1/providers/{id}/keys/{keyId}` | キー失効 |
-| `GET/POST` | `/v1/projects/{id}/api-keys` | SecureAI キー一覧 / 発行（**平文は作成時のみ返却**） |
+| `GET/POST` | `/v1/projects/{id}/api-keys?type=protect\|analyze` | SecureAI キー一覧 / 発行（`keyType` 指定・**平文は作成時のみ返却**） |
+| `POST` | `/v1/api-keys/{id}/rotate` | ローテーション（新キー発行 + 旧キーへ `rotated_from` 設定） |
 | `POST` | `/v1/api-keys/{id}/revoke` | キー失効 |
+| `GET` | `/v1/export/targets` / `POST /v1/projects/{id}/export` | Export（[⑦](./13-export-module.md)） |
 | `GET/PUT` | `/v1/projects/{id}/protect-rules` | ルール取得 / 一括更新（bulk upsert） |
 | `GET` | `/v1/projects/{id}/logs` | ログ一覧（フィルタ・ページネーション） |
 | `GET` | `/v1/projects/{id}/analytics/summary` | サマリ指標 |
@@ -171,3 +173,23 @@ masked_text = r.json()["maskedText"]
 - HTTP ルーターは **ユースケース層（application）を呼ぶだけ** の薄い層に保つ。
 - GraphQL 導入時は Strawberry 等のリゾルバから同じユースケースを呼ぶ（ビジネスロジックの二重化なし）。
 - スキーマは OpenAPI（REST）と GraphQL SDL の両方を、ドメインの型から機械生成できる構成を目標。
+
+## 8. API キーの分離とローテーション（⑧）
+
+- **用途分離**: Project 毎に **Protect 用キー** と **Analyze 用キー** を別々に発行（[DB: `api_keys`](./03-database-design.md)）。
+  - `POST /v1/protect` は `key_type=protect`、`POST /v1/analyze` は `key_type=analyze` のみ受理（不一致は `403 FORBIDDEN`）。
+  - プレフィックスで判別可能: `sk_protect_...` / `sk_analyze_...`。
+- **ローテーション**: `POST /v1/api-keys/{id}/rotate` で新キーを発行し、旧キーは `rotated_from` で連結。
+  猶予期間中は新旧両方が有効 → 期限で旧キーを `revoke`。**無停止**でキー切替できる。
+- **監査**: 発行・ローテーション・失効・閲覧は `audit_logs` に記録。
+
+## 9. SDK / Export / 将来拡張
+
+- **SDK**（[⑥](./12-sdk-design.md)）: 本 REST 設計（安定エンベロープ・`error.code`・`Idempotency-Key`・カーソル・OpenAPI）は
+  JS / Python / Node SDK 生成の前提を満たす。
+- **Export**（[⑦](./13-export-module.md)）: プロジェクト設定から AI コーディングツール向けプロンプトを生成。
+- **将来拡張は Plugin 経由**（[⑪](./14-plugin-architecture.md)）:
+  - `POST /v1/analyze:stream`（Streaming Response）
+  - `POST /v1/batch/analyze`（Batch Analyze）
+  - ファイル入力（PDF/Word/Excel/OCR/Image/Audio）、MCP エンドポイント公開、Webhook 通知。
+  - いずれも **送信前の匿名化（フェイルクローズ）** を必ず通す。

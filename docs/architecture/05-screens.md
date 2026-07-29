@@ -19,11 +19,12 @@ Google AI Studio に倣い、**左サイドバー + プロジェクトスイッ�
 | **Projects** | `/projects` | プロジェクト一覧。 | 新規作成・検索・アーカイブ |
 | Project Detail | `/projects/[id]` | 単一プロジェクトの概要（キー数・ルール状況・直近ログ）。 | 各設定へ遷移 |
 | **Providers** | `/providers` | 登録済み AI プロバイダー一覧。 | プロバイダー登録・有効/無効 |
-| Provider Detail | `/providers/[id]` | プロバイダー設定 + キー管理。 | キー登録・ローテーション・失効 |
-| **API Keys** | `/api-keys` | SecureAI 発行キーの一覧。 | 発行（1回だけ表示）・失効・スコープ設定 |
-| **Protect Rules** | `/protect-rules` | PII ルールの ON/OFF・匿名化方法設定。 | トグル・action 変更・カスタム追加 |
-| **Playground** | `/playground` | テキストを貼って **マスク結果を即時プレビュー**。 | 検出/マスク実行・ルール切替比較 |
-| **Analytics** | `/analytics` | 利用状況の可視化（時系列・種別内訳）。 | 期間フィルタ・エクスポート |
+| Provider Detail | `/providers/[id]` | プロバイダー設定 + **Provider API Keys** 管理（暗号化・末尾4桁のみ表示）。 | キー登録・ローテーション・失効 |
+| **API Keys** | `/api-keys` | SecureAI 発行キー。**Protect / Analyze をタブで分離**。 | 用途別に発行（1回だけ表示）・ローテーション・失効 |
+| **Protect Rules** | `/protect-rules` | PII ルールの ON/OFF・匿名化方法（**DB 管理**）。 | トグル・action 変更・**カスタム/Regex 追加** |
+| **Protect Playground** | `/playground` | 貼付 → ルール ON/OFF → 保護実行 → 置換をリアルタイムプレビュー → Gemini で分析。 | 検出/マスク実行・cURL/SDK 出力・デモ（[設計](./15-protect-playground.md)） |
+| **Export** | `/export` | Claude Code / Codex / Cursor / Windsurf 向けプロンプト生成。 | ターゲット選択・言語選択・コピー（[設計](./13-export-module.md)） |
+| **Analytics** | `/analytics` | 利用数・**Protect 件数・種別内訳・Token・Provider 利用率・応答時間**。 | 期間フィルタ・エクスポート |
 | **Logs** | `/logs` | リクエストログ（メタデータのみ）。 | フィルタ・詳細表示・requestId 検索 |
 | Log Detail | `/logs/[id]` | 単一リクエストの詳細（種別件数・レイテンシ・ステータス）。 | 再現情報コピー |
 | **Settings** | `/settings` | プロフィール・組織・メンバー・プラン・危険操作。 | メンバー招待・org 設定・退会 |
@@ -43,9 +44,10 @@ Google AI Studio に倣い、**左サイドバー + プロジェクトスイッ�
   Dashboard
   Projects
   Providers
-  API Keys
+  API Keys        (Protect / Analyze)
   Protect Rules
-  Playground
+  Protect Playground
+  Export
 ─────────────
   Analytics
   Logs

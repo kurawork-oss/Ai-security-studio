@@ -20,13 +20,36 @@ SecureAI Studio は **セキュリティ製品** であり、セキュリティ�
 
 | 対象 | 保存方法 |
 | --- | --- |
-| **プロバイダー API キー**（Gemini 等） | **AES-256-GCM** で暗号化（エンベロープ暗号）。KEK は KMS/環境変数。`key_hint` に末尾4桁のみ平文。 |
-| **SecureAI 発行キー** | 平文を保存しない。**`key_hash`（argon2/sha256）** のみ。作成時に 1 回だけ平文返却。`key_prefix` で識別。 |
+| **プロバイダー API キー**（Gemini 等） | **AES-256-GCM** で暗号化（エンベロープ暗号）。KEK は **KMS** または環境変数。`key_hint` に末尾4桁のみ平文。 |
+| **SecureAI 発行キー**（Protect/Analyze） | 平文を保存しない。**`key_hash`（argon2/sha256）** のみ。作成時に 1 回だけ平文返却。`key_prefix` で識別。 |
 | **Supabase service_role / JWT secret** | 環境変数（`.env`／シークレットマネージャ）。**コード/リポジトリに置かない**。 |
 
 - 復号は **Data Plane 実行時のみ**、必要最小限のスコープで。復号値をログに出さない。
 - **鍵ローテーション**: KEK/DEK・プロバイダーキー・発行キーすべてローテーション/失効可能に設計。
 - **シークレットスキャン**: CI で gitleaks 等を実行し、誤コミットを検知。
+
+### 2.1 鍵管理の抽象化（KMS 対応・⑩）
+
+Provider API Key は **AES-256-GCM のエンベロープ暗号**で保存し、暗号鍵の出所を `KeyProvider` で抽象化する。
+これにより開発時は環境変数、本番は KMS、と**実装を差し替えるだけ**で移行できる（ハードコードしない）。
+
+```python
+class KeyProvider(Protocol):
+    """KEK（鍵暗号鍵）の取得・データ鍵の生成/復号を担う。KMS 対応の抽象。"""
+    def generate_data_key(self) -> "DataKey": ...      # {plaintext, wrapped}
+    def decrypt_data_key(self, wrapped: bytes) -> bytes: ...
+```
+
+| 実装 | 用途 | 備考 |
+| --- | --- | --- |
+| `EnvKeyProvider` | ローカル/開発 | KEK を環境変数（`ENCRYPTION_KEK`）から取得 |
+| `AwsKmsKeyProvider` | 本番 | AWS KMS の GenerateDataKey / Decrypt |
+| `GcpKmsKeyProvider` | 本番 | Cloud KMS |
+| `VaultKeyProvider` | 本番 | HashiCorp Vault Transit |
+
+- **エンベロープ暗号**: 秘密ごとに **DEK（データ鍵）** を生成し AES-256-GCM で暗号化、DEK は KEK でラップして保存。
+  KEK は KMS 内から出ない（KMS 実装時）。IV/nonce・認証タグを付与し完全性を保証。
+- `crypto` 実装は `infrastructure/crypto/`、`KeyProvider` は port（[ディレクトリ構成](./02-directory-structure.md)）。
 
 ## 3. 認証・認可
 

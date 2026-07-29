@@ -13,11 +13,11 @@
 
 ### 管理（Control Plane）
 - Projects: 作成・一覧・詳細・アーカイブ。
-- Providers: **Gemini** の登録、provider_keys の **暗号化保存**（末尾4桁のみ表示）。
-- API Keys: 発行（**平文は1回のみ**表示）・失効。
-- Protect Rules: 既定 **12 種**の ON/OFF + action（mask/redact/hash/replace）。
+- Providers: **Provider Interface** 上に **Gemini** 実装。provider_keys の **AES-256-GCM 暗号化保存**（末尾4桁のみ表示）。
+- API Keys: **Protect 用 / Analyze 用を分離**して発行（**平文は1回のみ**表示）・ローテーション・失効。
+- Protect Rules: **DB 管理**。既定 **12 種**の ON/OFF + action（mask/redact/hash/replace）。
 - Logs: メタデータ一覧（種別件数・レイテンシ・ステータス）。
-- Playground: テキスト → マスク結果の即時プレビュー。
+- **Protect Playground**: 貼付 → ルール ON/OFF → 保護実行 → 置換プレビュー →（任意）Gemini 分析。
 
 ### ランタイム（Data Plane）
 - `POST /v1/protect` — 検出・匿名化 → `maskedText`。
@@ -53,7 +53,8 @@ MVP は以下をすべて満たすこと。
 - [ ] **生の PII・生テキストが DB／ログに保存されない**ことをレビューで確認。
 - [ ] provider_keys が暗号化保存され、平文が API レスポンス/ログに出ない。
 - [ ] SecureAI 発行キーは `key_hash` のみ保存され、平文は作成時 1 回のみ返る。
-- [ ] Playground で任意テキストの検出・マスク結果を確認できる。
+- [ ] **Protect 用 / Analyze 用キーが分離発行・ローテーションでき、用途不一致のキーは `403` になる。**
+- [ ] **Protect Playground** で貼付テキストの検出・置換をリアルタイム確認でき、そのまま Gemini 分析まで試せる。
 - [ ] Protect Rules の ON/OFF が Data Plane の挙動に反映される。
 - [ ] エラー形式・ログ形式・requestId が全経路で統一されている。
 - [ ] TypeScript strict / Python 型チェックが CI で緑。

@@ -1,41 +1,106 @@
 # SecureAI Studio
 
-> **AI を安全に利用するための共通セキュリティレイヤー（AI Security Platform）**
+> **AI Security Platform** — AI を「作る」サービスではなく、**AI を安全に「使う」ための共通セキュリティレイヤー**です。
 
 SecureAI Studio は、Gemini・Claude・OpenAI などの LLM へデータを送信する **前** に、
-PII（個人情報）を自動で検出・匿名化するためのプラットフォームです。
-開発者は既存システムに数行のコードを追加するだけで、安全に AI を利用できるようになります。
-
-**ミッション:「AI を使う前に SecureAI を通す」を世界標準にする。**
+PII（個人情報）を自動で検出・匿名化する **共通レイヤー** を提供します。
+開発者は既存システムに数行のコードを追加するだけで、安全に AI を利用できます。
 
 > [!IMPORTANT]
-> 本リポジトリは現在 **設計フェーズ（承認待ち）** です。
-> 実装は、設計ドキュメントの確認・承認後に開始します。
-> 設計一式は [`docs/architecture/`](./docs/architecture/) を参照してください。
+> ### 中核思想：**「AI へ送る前に、必ず SecureAI を通す」**
+> 本プロダクトの最大の価値は「Gemini を提供すること」では **ありません**。
+> **AI へデータを送る前に PII を保護する “共通レイヤー”** であることが本質です。
+> この思想は [PRD](./docs/PRD.md)・[Architecture](./docs/architecture/)・README のすべてに一貫して反映されています。
 
----
+## これは何か / 何ではないか
 
-## 提供する 2 つの API パターン
+| SecureAI Studio は… | ✅ そうである | ❌ そうではない |
+| --- | --- | --- |
+| 位置付け | AI Security Platform（共通 PII 保護レイヤー） | AI（LLM）を提供するサービス |
+| 役割 | AI へ送る前の「関所」／ゲートウェイ | AI そのもの・モデル提供者 |
+| 価値 | どの AI を使っても PII を守れる横断的な安全層 | 特定プロバイダー（Gemini 等）への依存 |
 
 ```mermaid
 flowchart LR
-    subgraph P1["パターン① Protect API（AI 導入済ユーザー向け）"]
-        A1[ユーザーシステム] -->|text| S1[SecureAI Protect API]
-        S1 -->|PII 検出 → 匿名化| S1
-        S1 -->|maskedText| A1
-        A1 -->|maskedText| G1[Gemini API など]
+    App["あらゆるアプリ / システム"] -->|生データ| SEC["🛡 SecureAI<br/>PII 検出・匿名化"]
+    SEC -->|マスク済みデータ| AI["Gemini / Claude / OpenAI / ..."]
+    classDef sec fill:#0b3d2e,color:#fff,stroke:#10b981
+    class SEC sec
+```
+
+---
+
+## 2 つの利用パターン
+
+### Pattern A — Protect API（すでに Gemini API 等を利用中の開発者向け）
+
+自社で LLM を呼んでいる開発者が、送信前にマスクだけを SecureAI に任せるパターン。
+
+```text
+App
+  ↓
+SecureAI Protect API
+  ↓
+PII 匿名化
+  ↓
+マスク済みデータ返却
+  ↓
+Gemini API（開発者が自分で送信）
+```
+
+### Pattern B — Analyze API（まだ AI を導入していない開発者向け）
+
+LLM 未導入の開発者が、マスク〜LLM 呼び出し〜結果取得までを SecureAI 経由で行うパターン。
+
+```text
+App
+  ↓
+SecureAI Analyze API
+  ↓
+PII 匿名化
+  ↓
+登録済み Gemini API（SecureAI が呼び出し）
+  ↓
+分析結果
+```
+
+```mermaid
+flowchart TB
+    subgraph A["Pattern A：Protect API"]
+        direction LR
+        a1[App] --> a2[SecureAI Protect API] --> a3[PII 匿名化] --> a4[マスク済み返却] --> a5[Gemini API]
     end
-    subgraph P2["パターン② Analyze API（AI 未導入ユーザー向け）"]
-        A2[ユーザーシステム] -->|text| S2[SecureAI Analyze API]
-        S2 -->|PII 検出 → 匿名化| S2
-        S2 -->|maskedText| G2[登録済 Gemini API]
-        G2 -->|LLM 応答| S2
-        S2 -->|analysis| A2
+    subgraph B["Pattern B：Analyze API"]
+        direction LR
+        b1[App] --> b2[SecureAI Analyze API] --> b3[PII 匿名化] --> b4[登録済み Gemini API] --> b5[分析結果]
     end
 ```
 
-- **Protect API** — マスク済みテキストを返す。LLM への送信はユーザー側で行う。
-- **Analyze API** — マスク → 登録済みプロバイダーへ送信 → 分析結果を返す。
+---
+
+## SecureAI Studio（管理画面）の役割
+
+Studio は Google AI Studio ライクな **管理コンソール**です。最低限、以下を管理します。
+
+| 管理対象 | 内容 |
+| --- | --- |
+| **Project** | 利用単位。設定・キー・ルール・ログはすべてプロジェクトに紐づく |
+| **Provider** | LLM プロバイダー（Gemini／将来 Claude・OpenAI 等）の登録 |
+| **Provider API Keys** | プロバイダー側の API キー（**AES-256-GCM 暗号化**・ローテーション） |
+| **Protect Rules** | PII 保護ルール（**DB 管理**・ON/OFF・カスタム/Regex 追加可能） |
+| **API Keys** | SecureAI 発行キー（**Protect 用 / Analyze 用を分離**・ローテーション） |
+| **Analytics** | 利用数・Protect 件数・種別内訳・Token 数・Provider 利用率・応答時間 |
+| **Logs** | リクエストログ（メタデータのみ・生 PII は保存しない） |
+| **Settings** | プロフィール・組織・メンバー・プラン |
+
+## 差別化・特徴
+
+- 🧪 **Protect Playground** — 貼り付け → ルール ON/OFF → 保護実行 → どこが `[PERSON]`/`[PHONE]` に置換されたかをリアルタイムプレビュー → そのまま「Gemini で分析」。導入前の検証・デモに最適（[設計](./docs/architecture/15-protect-playground.md)）。
+- 🔌 **Provider Interface** — Gemini から着手し、Claude/OpenAI/DeepSeek/Grok/Local を同一 IF で追加（[設計](./docs/architecture/11-provider-interface.md)）。
+- 🧩 **Plugin 構造** — MCP・Webhook・Streaming・Batch・PDF/Word/Excel・OCR・Image・Audio・RAG を後付け可能（[設計](./docs/architecture/14-plugin-architecture.md)）。
+- 📦 **SDK 前提の API** — REST に加え JS / Python / Node SDK を提供予定（[設計](./docs/architecture/12-sdk-design.md)）。
+- 📤 **Export Module** — Studio から Claude Code / Codex / Cursor / Windsurf 向けプロンプトを自動生成（[設計](./docs/architecture/13-export-module.md)）。
+- 🔐 **DB 管理の Protect Rules** — 固定 12 項目ではなく、企業独自ルール・Regex を自由に追加。
 
 ## 技術スタック（概要）
 
@@ -48,8 +113,10 @@ flowchart LR
 | PII 保護 | Microsoft Presidio / GiNZA / Regex |
 | AI | Gemini API（MVP）／ Claude・OpenAI・DeepSeek・Grok・Local（将来） |
 
-詳細は [ライブラリ構成](./docs/architecture/10-library-stack.md) を参照。
-
 ## ドキュメント
 
-設計一式は [`docs/architecture/README.md`](./docs/architecture/README.md) にインデックスがあります。
+- 📘 [PRD（プロダクト要求仕様）](./docs/PRD.md) — 思想・位置付け・価値・スコープ
+- 🏛 [設計ドキュメント一式](./docs/architecture/README.md) — アーキテクチャ〜セキュリティ〜Playground
+
+> [!NOTE]
+> 本リポジトリは現在 **設計フェーズ（承認待ち）** です。実装は設計承認後に開始します。

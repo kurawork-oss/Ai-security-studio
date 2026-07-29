@@ -33,7 +33,8 @@
 | 日本語 NLP | `spacy`, `ja-ginza`（GiNZA） | 日本語 NER |
 | DB | `sqlalchemy`(2.0 async), `asyncpg`, `alembic` | Repository 実装 / マイグレーション補助 |
 | 認証 | `pyjwt`（+ JWKS）, `python-jose` | Supabase JWT 検証 |
-| 暗号化 | `cryptography` | AES-256-GCM / 鍵導出 |
+| 暗号化 | `cryptography` | AES-256-GCM / エンベロープ暗号 |
+| KMS（本番・任意） | `boto3`(AWS KMS) / `google-cloud-kms` / `hvac`(Vault) | `KeyProvider` 実装（[⑩](./09-security-design.md#21-鍵管理の抽象化kms-対応)） |
 | LLM | `google-generativeai`（Gemini）, `httpx` | プロバイダー呼び出し |
 | ログ | `structlog` | 構造化ログ統一 |
 | 信頼性 | `tenacity` | リトライ |
@@ -55,6 +56,20 @@
 | CI | GitHub Actions | lint / test / build / migration / security |
 | セキュリティ | `gitleaks`, `pip-audit`, `npm audit`, `semgrep` | シークレット/脆弱性/SAST |
 
+## 将来拡張ライブラリ（Plugin 対応時・[⑪](./14-plugin-architecture.md)）
+
+コアには含めず、**Plugin として必要時に追加**（依存を最小に保つ）。
+
+| 機能 | 候補ライブラリ |
+| --- | --- |
+| PDF | `pypdf` / `pdfplumber` |
+| Word / Excel | `python-docx` / `openpyxl` |
+| OCR / Image | `pytesseract` / `Pillow` |
+| Audio（文字起こし） | Whisper 系 / プロバイダー API |
+| RAG | ベクトル DB クライアント（`pgvector` 等） |
+| MCP | MCP サーバ SDK |
+| SDK 生成 | `openapi-typescript` / `openapi-generator` |
+
 ## 環境変数（`.env.example` に定義・値は含めない）
 
 | 変数 | 用途 | 例/備考 |
@@ -65,7 +80,9 @@
 | `SUPABASE_URL` | API → Supabase | |
 | `SUPABASE_SERVICE_ROLE_KEY` | API（限定使用） | **秘匿** |
 | `SUPABASE_JWT_JWKS_URL` / `SUPABASE_JWT_SECRET` | JWT 検証 | |
-| `ENCRYPTION_KEK` | エンベロープ暗号の KEK | **秘匿**（KMS 推奨） |
+| `ENCRYPTION_KEK` | エンベロープ暗号の KEK（Env 実装時） | **秘匿** |
+| `KMS_PROVIDER` | 鍵管理の実装選択 | `env` / `aws` / `gcp` / `vault` |
+| `KMS_KEY_ID` | KMS の KEK 識別子 | 本番（AWS/GCP/Vault）で使用 |
 | `GEMINI_API_BASE` | Gemini エンドポイント | ハードコード禁止 |
 | `API_TEXT_MAX_BYTES` | 入力上限 | 既定 102400 |
 | `RATE_LIMIT_*` | レート制限設定 | Phase 2 |

@@ -76,14 +76,20 @@ Gov ID ────────────────────────�
         変更あり  [ Discard ] [ Save changes ]
 ```
 
-### Playground（Google AI Studio 風の中核体験）
-- 左: 入力テキストエリア。右: マスク結果 + 検出ハイライト。
-- 上部にルールのクイックトグル、下部に「この結果を再現する cURL / コード」スニペット（コピー）。
-- サンプルテキスト投入ボタンで即体験。
+### Protect Playground（差別化の中核体験）
+- 左右分割: 入力テキスト／保護後プレビュー（`[PERSON]`・`[PHONE]` を**色分けハイライト**＋対応表）。
+- 上部にルールのクイックトグル・Provider 選択・「保護実行」「Gemini で分析」ボタン。
+- 「検出件数 / マスク率 / 種別内訳」の統計、下部に **再現用 cURL / SDK スニペット**（コピー）。
+- サンプルデータ投入。貼付テキストは**永続化しない**。詳細は [Protect Playground 設計](./15-protect-playground.md)。
 
-### API Keys
-- 発行モーダルは **1回だけ平文表示** + コピー + 「もう表示されません」の警告。
-- テーブルは `keyPrefix`・scopes・最終利用・状態。行から失効。
+### Export
+- ターゲット（Claude Code / Codex / Cursor / Windsurf）と言語（TS/Python）を選択 → プロンプト生成 → コピー。
+- 生成物に**実キーを含めず**環境変数プレースホルダを表示（[Export Module](./13-export-module.md)）。
+
+### API Keys（Protect / Analyze 分離）
+- 上部に **Protect / Analyze のタブ**。用途ごとにキーを一覧・発行。
+- 発行モーダルは **1回だけ平文表示** + コピー + 「もう表示されません」の警告。プレフィックスで用途が判別可能（`sk_protect_`/`sk_analyze_`）。
+- テーブルは `keyPrefix`・用途・最終利用・状態。行から **ローテーション**（新旧併存の猶予表示）・失効。
 
 ### Providers
 - 登録: provider_type 選択（Gemini を既定強調、他は "Coming soon" バッジ）。
@@ -91,7 +97,7 @@ Gov ID ────────────────────────�
 
 ### Logs / Analytics
 - Logs: DataTable（endpoint / status / latency / entity_counts / time）+ フィルタ + requestId 検索。
-- Analytics: 期間セレクタ + 時系列チャート + PII 種別内訳（ドーナツ）+ エラー率。
+- Analytics: 期間セレクタ + 時系列（リクエスト数・**Protect 件数**・応答時間 p95）+ **PII 種別内訳**（ドーナツ）+ **Provider 利用率** + **Token 数** + エラー率。
 
 ## 状態・空状態・エラー
 

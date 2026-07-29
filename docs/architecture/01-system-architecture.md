@@ -1,5 +1,10 @@
 # ① システムアーキテクチャ
 
+> **位置付け（最重要）**: SecureAI Studio は **AI Security Platform**（共通 PII 保護レイヤー）であり、
+> AI（LLM）を提供するサービスではない。中核思想は **「AI へ送る前に、必ず SecureAI を通す」**。
+> Gemini は最初に対応する 1 プロバイダーに過ぎず、[Provider Interface](./11-provider-interface.md) により
+> プロバイダー非依存の横断的な安全層として機能する。詳細は [PRD](../PRD.md)。
+
 ## 1. 全体像
 
 SecureAI Studio は、責務の異なる **2 つの平面（Plane）** で構成します。
@@ -94,7 +99,9 @@ flowchart LR
 
 ## 4. リクエストフロー
 
-### 4.1 Protect API
+### 4.1 Protect API（= Pattern A：AI 導入済み向け）
+
+`App → Protect API → PII 匿名化 → マスク済み返却 → 開発者が Gemini へ送信`
 
 ```mermaid
 sequenceDiagram
@@ -112,7 +119,9 @@ sequenceDiagram
     P-->>C: 200 {maskedText, requestId}
 ```
 
-### 4.2 Analyze API（フェイルクローズが重要）
+### 4.2 Analyze API（= Pattern B：AI 未導入向け・フェイルクローズが重要）
+
+`App → Analyze API → PII 匿名化 → 登録済み Gemini API → 分析結果`
 
 ```mermaid
 sequenceDiagram
@@ -171,3 +180,26 @@ Gemini 実装から着手。Claude / OpenAI / DeepSeek / Grok / Local は同一 
 | 可用性 | 99.9%（データ平面） |
 | データ保持 | 生 PII: 0（永続化しない） / ログメタデータ: 既定 90 日 |
 | スケール | ステートレス水平スケール（PII Engine はワーカープール） |
+
+## 7. 拡張レイヤー（関連設計）
+
+コアは以下の抽象で開かれており、**コア変更なしで**能力を追加できる（拡張性優先）。
+
+```mermaid
+flowchart TB
+    CORE["コア: Protect / Analyze + PII Engine"]
+    CORE --> PI["Provider Interface<br/>Gemini→Claude/OpenAI/DeepSeek/Grok/Local"]
+    CORE --> PL["Plugin 構造<br/>MCP/Webhook/Streaming/Batch/PDF/OCR/RAG..."]
+    CORE --> SDK["SDK<br/>JS / Python / Node"]
+    CORE --> EXP["Export Module<br/>Claude Code/Codex/Cursor/Windsurf"]
+    CORE --> PG["Protect Playground<br/>導入前検証・デモ"]
+```
+
+| 抽象 | 役割 | 設計 |
+| --- | --- | --- |
+| Provider Interface | LLM プロバイダー差し替え | [11](./11-provider-interface.md) |
+| SDK | 数行統合（REST の型付ラッパ） | [12](./12-sdk-design.md) |
+| Export Module | AI コーディングツール向けプロンプト生成 | [13](./13-export-module.md) |
+| Plugin 構造 | 入力抽出・配信・プロトコル・RAG | [14](./14-plugin-architecture.md) |
+| Protect Playground | 保護効果のリアルタイム検証 | [15](./15-protect-playground.md) |
+| 鍵管理（KMS 対応） | provider_keys の AES-256-GCM 暗号 | [09 §2](./09-security-design.md#2-秘密情報の管理) |

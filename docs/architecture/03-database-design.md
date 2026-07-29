@@ -25,6 +25,10 @@ erDiagram
     projects ||--o{ analytics_daily : "rolls up"
     organizations ||--o{ audit_logs : records
     users ||--o{ audit_logs : "actor"
+    organizations ||--o{ pii_entity_types : "custom (org-scoped)"
+    plugins ||--o{ project_plugins : "installed as"
+    projects ||--o{ project_plugins : enables
+    projects ||--o{ export_templates : "customizes (nullable=global)"
 
     users {
         uuid id PK "= auth.users.id"
@@ -85,20 +89,22 @@ erDiagram
         uuid id PK
         uuid project_id FK
         text name
-        text key_prefix "sk_live_xxx"
+        text key_type "protect|analyze (分離)"
+        text key_prefix "sk_protect_xxx / sk_analyze_xxx"
         text key_hash "sha256/argon2"
-        jsonb scopes "[protect,analyze]"
         text status "active|revoked"
+        uuid rotated_from_id FK "nullable(前キー)"
         timestamptz last_used_at
         timestamptz expires_at "nullable"
         timestamptz created_at
         timestamptz revoked_at "nullable"
     }
     pii_entity_types {
-        text code PK "PERSON|EMAIL|JP_MYNUMBER..."
+        text code PK "PERSON|EMAIL|JP_MYNUMBER|CUSTOM_*"
+        uuid org_id FK "nullable(builtin=null / 企業独自)"
         text label
-        text category "identity|contact|financial|network|gov_id"
-        text default_regex "nullable"
+        text category "identity|contact|financial|network|gov_id|custom"
+        text default_regex "nullable(カスタムRegex)"
         boolean is_builtin
         timestamptz created_at
     }
@@ -137,9 +143,40 @@ erDiagram
         text endpoint
         int request_count
         int error_count
-        jsonb entity_counts
-        int avg_latency_ms
-        bigint token_total
+        int protect_count "匿名化した PII 総数"
+        jsonb entity_counts "Protect 対象内訳（種別別）"
+        jsonb provider_usage "provider別 利用回数/割合"
+        int avg_latency_ms "平均応答時間"
+        int p95_latency_ms "p95 応答時間"
+        bigint token_total "Token 数合計"
+    }
+    plugins {
+        uuid id PK
+        text plugin_key UK "pdf-extractor|webhook|mcp..."
+        text category "extractor|augmentation|delivery|protocol"
+        text version
+        boolean is_builtin
+        jsonb config_schema
+        timestamptz created_at
+    }
+    project_plugins {
+        uuid id PK
+        uuid project_id FK
+        uuid plugin_id FK
+        boolean enabled
+        jsonb config "config_schema で検証"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    export_templates {
+        uuid id PK
+        uuid project_id FK "nullable(=global builtin)"
+        text target_id "claude_code|codex|cursor|windsurf"
+        text language "typescript|python|..."
+        text body "テンプレート本文"
+        int version
+        boolean is_builtin
+        timestamptz created_at
     }
     audit_logs {
         uuid id PK
@@ -172,16 +209,27 @@ MVP では「サインアップ時に個人用 org を自動作成」し、UI �
 - `provider_keys` = そのプロバイダーの API キー。**暗号化して保存**、`key_hint` に末尾4桁のみ平文。
   複数キー + `status` によりローテーション対応。**復号は Data Plane 実行時のみ**。
 
-### `api_keys`
-SecureAI が発行する Protect/Analyze 呼び出し用キー。
-**生キーは保存せず** `key_hash` のみ保存。作成時に一度だけ平文を返す。
-`key_prefix` は識別・表示用。`scopes` で protect/analyze を制御。
+### `api_keys`（⑧ Protect / Analyze を分離・ローテーション）
+SecureAI が発行する呼び出し用キー。**Project 毎に `key_type` で Protect 用 / Analyze 用を分離**する
+（1 キー = いずれか一方の用途）。プレフィックスも `sk_protect_` / `sk_analyze_` で区別。
+- **生キーは保存せず** `key_hash` のみ保存。作成時に一度だけ平文を返す（`key_prefix` は識別・表示用）。
+- **ローテーション**: 新キーを発行し、`rotated_from_id` で旧キーを参照。旧キーは猶予期間後に
+  `revoked` へ。無停止でのキー切替が可能。
+- Data Plane はリクエストの用途（protect/analyze）と `key_type` の一致を検証（不一致は `403`）。
 
-### `pii_entity_types`（カタログ）+ `protect_rules`
-- 既定 12 種を `pii_entity_types` にシード（下表）。**将来のカスタムルール**は
-  ここに新レコードを追加、または `protect_rules.config.regex` で定義。
+### `pii_entity_types`（カタログ）+ `protect_rules`（⑤ 完全 DB 管理・拡張可能）
+Protect Rule は **固定 12 項目ではなく DB 管理**とし、以下を後から自由に追加できる:
+- **独自ルール** — `pii_entity_types` に新コードを追加（`is_builtin=false`）。
+- **Regex 追加** — `default_regex`／`protect_rules.config.regex` にパターンを定義。
+- **企業独自ルール** — `pii_entity_types.org_id` を設定し **組織スコープ**で管理（例: 社員番号・案件コード）。
+  RLS により他組織からは不可視。
+
+構成:
+- 既定 12 種を `pii_entity_types`（`org_id=null, is_builtin=true`）にシード（下表）。
 - `protect_rules` はプロジェクト × エンティティで 1 行（`UNIQUE(project_id, entity_type)`）。
-  `enabled` で ON/OFF、`action` で匿名化方法、`config` に閾値・許可/拒否リスト。
+  `enabled` で ON/OFF、`action` で匿名化方法、`config` に閾値・Regex・許可/拒否リスト、`priority` で重複解決順。
+- 検出エンジンは有効な `protect_rules` を読み、組込 Recognizer と **カスタム Regex Recognizer** を動的に構成
+  （[PII Engine](./01-system-architecture.md#3-pii-engine-の内部構成)）。コード変更なしにルールを拡張できる。
 
 #### 既定エンティティ（シード）
 
@@ -204,12 +252,25 @@ SecureAI が発行する Protect/Analyze 呼び出し用キー。
 Data Plane の 1 リクエスト = 1 行。**生テキスト・生 PII は保存しない**。
 `entity_counts` に「種別ごとの件数」、`ip_hash` は生 IP をハッシュ化。
 
-### `analytics_daily`
+### `analytics_daily`（⑨ 集計指標の拡張）
 `logs` からの日次ロールアップ（バッチ or トリガー）。ダッシュボードの時系列表示用。
-リアルタイム値は `logs` を集計、履歴はこのテーブルで高速化。
+リアルタイム値は `logs` を集計、履歴はこのテーブルで高速化。集計する指標:
+- **API 利用数** (`request_count`, `error_count`)
+- **Protect 件数** (`protect_count`) と **Protect 対象内訳** (`entity_counts` = 種別別)
+- **Token 数** (`token_total`)
+- **Provider 利用率** (`provider_usage` = provider 別回数/割合)
+- **レスポンス時間** (`avg_latency_ms`, `p95_latency_ms`)
+
+### `plugins` / `project_plugins`（⑪ Plugin 構造）
+- `plugins` = 利用可能な Plugin カタログ（extractor/augmentation/delivery/protocol）。`config_schema` で設定検証。
+- `project_plugins` = プロジェクト単位の有効化と設定（[Plugin Architecture](./14-plugin-architecture.md)）。
+
+### `export_templates`（⑦ Export Module）
+Claude Code / Codex / Cursor / Windsurf 向けプロンプトのテンプレート。
+`project_id=null` は組込グローバル、値ありは企業独自（[Export Module](./13-export-module.md)）。**実キーは保存しない**。
 
 ### `audit_logs`
-Control Plane の重要操作（キー発行・失効・ルール変更・キー閲覧）を記録。改ざん検知・監査用。
+Control Plane の重要操作（キー発行・失効・ローテーション・ルール変更・キー閲覧）を記録。改ざん検知・監査用。
 
 ## 3. RLS（Row Level Security）方針
 
@@ -238,13 +299,18 @@ using (
 | --- | --- |
 | `logs` | `(project_id, created_at desc)`, `(api_key_id)`, `(endpoint)` |
 | `memberships` | `(user_id)`, `unique(org_id, user_id)` |
-| `api_keys` | `unique(key_hash)`, `(project_id, status)` |
+| `api_keys` | `unique(key_hash)`, `(project_id, key_type, status)` |
 | `protect_rules` | `unique(project_id, entity_type)` |
+| `pii_entity_types` | `(org_id)`, `unique(org_id, code)` |
+| `project_plugins` | `unique(project_id, plugin_id)` |
+| `export_templates` | `(project_id, target_id, language)` |
 | `analytics_daily` | `unique(project_id, day, endpoint)` |
 
 ## 5. マイグレーション方針
 
 - **Supabase CLI** でスキーマ管理（`infra/supabase/migrations/`）。
 - バックエンドの SQLAlchemy モデルは同スキーマに追従（`D-4` 採用時は Alembic と役割分担: DDL は Supabase 側を正とする）。
-- `seed.sql` で `pii_entity_types` の既定 12 種を投入。
+- `seed.sql` で `pii_entity_types` の既定 12 種と `plugins` カタログ・`export_templates` の
+  組込テンプレートを投入。
 - 破壊的変更は避け、後方互換のカラム追加を優先（拡張性）。
+- カスタム PII 種別・Plugin・Export テンプレートは **DDL 変更不要**（データとして追加）で拡張できる。

@@ -113,10 +113,24 @@ Studio は Google AI Studio ライクな **管理コンソール**です。最�
 | PII 保護 | Microsoft Presidio / GiNZA / Regex |
 | AI | Gemini API（MVP）／ Claude・OpenAI・DeepSeek・Grok・Local（将来） |
 
+## 実装状況（スライス①）
+
+設計承認後、MVP のコア価値（PII 保護エンジン + Protect/Analyze API）から実装を開始しました。
+
+| 領域 | 状態 |
+| --- | --- |
+| API: Protect / Analyze / Detect（FastAPI・Clean Architecture） | ✅ 実装・**テスト済**（pytest 17件緑） |
+| PII エンジン（Regex + Luhn/マイナンバー/法人番号検証・12種） | ✅ |
+| Provider Interface（echo / gemini）・フェイルクローズ | ✅ |
+| API キー（Protect/Analyze 分離・認可） | ✅ |
+| DB マイグレーション + seed（Supabase・RLS） | ✅（PG パーサ検証済／未適用） |
+| Web: ランディング + **Protect Playground**（BFF でキー秘匿） | ✅ 雛形（`next build` 通過・E2E 確認） |
+| 管理画面 CRUD / Supabase 結線 / SDK / Export / Plugin | ⏳ 次スライス |
+
+実行方法は [開発ガイド](./docs/DEVELOPMENT.md) を参照。
+
 ## ドキュメント
 
 - 📘 [PRD（プロダクト要求仕様）](./docs/PRD.md) — 思想・位置付け・価値・スコープ
 - 🏛 [設計ドキュメント一式](./docs/architecture/README.md) — アーキテクチャ〜セキュリティ〜Playground
-
-> [!NOTE]
-> 本リポジトリは現在 **設計フェーズ（承認待ち）** です。実装は設計承認後に開始します。
+- 🛠 [開発ガイド](./docs/DEVELOPMENT.md) — セットアップ・実行・実装状況

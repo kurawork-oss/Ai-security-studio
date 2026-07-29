@@ -15,6 +15,10 @@ out/
 dist/
 build/
 *.egg-info/
+.eggs/
+next-env.d.ts
+*.tsbuildinfo
+.eslintcache
 
 # Env / secrets (never commit real values)
 .env

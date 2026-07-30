@@ -34,6 +34,22 @@ export interface Provider {
   defaultModel?: string | null;
   isActive: boolean;
 }
+export interface AnalyticsSummary {
+  requests: number;
+  byEndpoint: Record<string, number>;
+  protectCount: number;
+  entityCounts: Record<string, number>;
+  avgLatencyMs: number;
+}
+export interface LogEntry {
+  id: string;
+  endpoint: string;
+  statusCode?: number | null;
+  latencyMs?: number | null;
+  inputChars?: number | null;
+  entityCounts: Record<string, number>;
+  createdAt?: string | null;
+}
 
 async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = await accessToken();
@@ -71,4 +87,6 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ rules }),
     }),
+  analyticsSummary: (id: string) => req<AnalyticsSummary>(`projects/${id}/analytics/summary`),
+  listLogs: (id: string) => req<LogEntry[]>(`projects/${id}/logs?limit=20`),
 };

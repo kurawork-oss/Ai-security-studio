@@ -26,8 +26,9 @@
 | **Export Module（Claude Code/Codex/Cursor/Windsurf）** | ✅ 実装・テスト済 |
 | **マルチプロバイダー（Gemini / Claude / OpenAI）** | ✅ アダプタ実装・テスト済 |
 | **Plugin: PDF / Word / Excel 抽出** | ✅ `.[extractors]` で有効化・テスト済 |
+| **Analytics 可視化（Dashboard）** | ✅ 統計タイル・種別内訳バー・ログ |
 | Plugin: OCR / Audio / RAG / MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
-| Analytics 可視化（チャート） | ⏳ 次スライス |
+| 本番 Supabase Auth 結線 / RS256 JWKS | ⏳ 今後 |
 
 テスト: backend `pytest 45件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
 

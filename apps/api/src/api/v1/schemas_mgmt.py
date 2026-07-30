@@ -93,3 +93,23 @@ class AnalyticsSummaryOut(BaseModel):
     protectCount: int
     entityCounts: dict[str, int]
     avgLatencyMs: int
+
+
+# ── Export ──
+class ExportTargetOut(BaseModel):
+    id: str
+    label: str
+
+
+class ExportRequest(BaseModel):
+    targetId: str
+    language: str = "typescript"
+    pattern: str = Field("protect", pattern="^(protect|analyze)$")
+    apiBaseUrl: str = "https://api.secureai.studio"
+
+
+class ExportArtifactOut(BaseModel):
+    targetId: str
+    title: str
+    content: str
+    format: str

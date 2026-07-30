@@ -15,6 +15,7 @@ from ...core.security import generate_api_key
 from ...domain.entities import ApiKey, LogEntry, Project, ProtectRule, Provider
 from ...domain.value_objects import KeyType
 from ...infrastructure.crypto.keyprovider import AesGcmCipher
+from ..export import TARGET_META, ExportArtifact, ExportContext, render
 
 
 def slugify(name: str) -> str:
@@ -156,3 +157,35 @@ class ManagementService:
             "entityCounts": entity_counts,
             "avgLatencyMs": avg_latency,
         }
+
+    # ── Export (AI coding tool prompts) ──
+    def export_targets(self) -> list[dict]:
+        return TARGET_META
+
+    async def export(
+        self,
+        user: AuthUser,
+        project_id: str,
+        *,
+        target_id: str,
+        language: str,
+        pattern: str,
+        api_base_url: str,
+    ) -> ExportArtifact:
+        await self._project_for(user, project_id)
+        rules = await self.uow.rules.list_by_project(project_id)
+        enabled = [r.entity_type for r in rules if r.enabled]
+        provider_type = None
+        if pattern == "analyze":
+            providers = await self.uow.providers.list_by_project(project_id)
+            active = next((p for p in providers if p.is_active), None)
+            provider_type = active.provider_type if active else None
+        ctx = ExportContext(
+            pattern=pattern,
+            language=language,
+            api_base_url=api_base_url,
+            enabled_rules=enabled,
+            key_env_var="SECUREAI_PROTECT_KEY" if pattern == "protect" else "SECUREAI_ANALYZE_KEY",
+            provider_type=provider_type,
+        )
+        return render(target_id, ctx)

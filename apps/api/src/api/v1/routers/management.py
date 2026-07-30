@@ -12,6 +12,9 @@ from ..schemas_mgmt import (
     ApiKeyCreate,
     ApiKeyIssued,
     ApiKeyOut,
+    ExportArtifactOut,
+    ExportRequest,
+    ExportTargetOut,
     LogOut,
     ProjectCreate,
     ProjectOut,
@@ -138,3 +141,22 @@ async def list_logs(project_id: str, limit: int = 50, user: AuthUser = Depends(r
 @router.get("/projects/{project_id}/analytics/summary", response_model=AnalyticsSummaryOut)
 async def analytics_summary(project_id: str, user: AuthUser = Depends(require_user), svc: ManagementService = Depends(get_service)):
     return AnalyticsSummaryOut(**await svc.analytics_summary(user, project_id))
+
+
+# ── Export ──
+@router.get("/export/targets", response_model=list[ExportTargetOut])
+async def export_targets(user: AuthUser = Depends(require_user), svc: ManagementService = Depends(get_service)):
+    return [ExportTargetOut(**t) for t in svc.export_targets()]
+
+
+@router.post("/projects/{project_id}/export", response_model=ExportArtifactOut)
+async def export_project(project_id: str, payload: ExportRequest, user: AuthUser = Depends(require_user), svc: ManagementService = Depends(get_service)):
+    artifact = await svc.export(
+        user, project_id,
+        target_id=payload.targetId, language=payload.language,
+        pattern=payload.pattern, api_base_url=payload.apiBaseUrl,
+    )
+    return ExportArtifactOut(
+        targetId=artifact.target_id, title=artifact.title,
+        content=artifact.content, format=artifact.format,
+    )

@@ -22,10 +22,12 @@
 | Web: ランディング + Protect Playground | ✅ BFF 経由でキー秘匿 |
 | **Web: Dashboard（Projects/API Keys/Protect Rules/Providers）** | ✅ 管理 BFF 経由・`next build` 通過 |
 | **Plugin 基盤（Extractor/Delivery）+ Extract/Batch/Streaming/Webhook** | ✅ 実装・テスト済 |
+| **SDK（Python `secureai` / JS `@secureai/sdk`）** | ✅ Python pytest・JS `tsc` ビルド |
+| **Export Module（Claude Code/Codex/Cursor/Windsurf）** | ✅ 実装・テスト済 |
 | Plugin: PDF/Word/Excel/OCR/Audio/RAG/MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
-| SDK / Export / マルチプロバイダー実接続 | ⏳ 次スライス |
+| マルチプロバイダー実接続 / Analytics 可視化 | ⏳ 次スライス |
 
-テスト: `pytest 29件緑`（うち 4 件は実 Postgres 統合）。`next build` 通過。管理〜データ平面〜Plugin の E2E 確認済み。
+テスト: backend `pytest 34件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
 
 ### Plugin エンドポイント
 
@@ -92,6 +94,30 @@ psql "$DATABASE_URL" -f infra/supabase/seed.sql
 - ローカルシム（Supabase 非使用時のみ）: [`local/00_local_shim.sql`](../infra/supabase/local/00_local_shim.sql)
 - 統合テスト: `SECUREAI_TEST_DATABASE_URL=postgresql+asyncpg://…/testdb pytest`（未設定時は自動 skip）
 - 設計との対応: [DB 設計](./architecture/03-database-design.md)
+
+## SDK
+
+REST の型付きラッパー。`packages/sdk-python`（`secureai`）と `packages/sdk-js`（`@secureai/sdk`）。
+
+```python
+from secureai import SecureAI
+client = SecureAI(api_key="sk_protect_...", base_url="http://localhost:8000")
+print(client.protect("田中太郎 090-1234-5678").masked_text)
+```
+```ts
+import { SecureAI } from "@secureai/sdk";
+const client = new SecureAI("sk_protect_...", { baseUrl: "http://localhost:8000" });
+const { maskedText } = await client.protect("田中太郎 090-1234-5678");
+```
+
+- Python テスト: `cd packages/sdk-python && pytest`（httpx MockTransport で API 不要）
+- JS 型検証/ビルド: `npm run -w @secureai/sdk build`
+
+## Export API（AI コーディングツール向けプロンプト生成）
+
+- `GET /v1/export/targets` — 対応ターゲット（claude_code / codex / cursor / windsurf）
+- `POST /v1/projects/{id}/export` — `{ targetId, language, pattern, apiBaseUrl }` → プロンプト
+- 生成物に**実キーは含めず**、環境変数プレースホルダのみ。
 
 ## 環境変数
 

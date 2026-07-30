@@ -1,0 +1,16 @@
+{
+  "name": "@secureai/sdk",
+  "version": "0.1.0",
+  "description": "SecureAI Studio JavaScript/TypeScript SDK — protect PII before sending to any LLM",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.5.3"
+  }
+}

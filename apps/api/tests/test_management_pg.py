@@ -185,3 +185,22 @@ def test_tenant_isolation(client):
 def test_requires_auth(client):
     assert client.get("/v1/projects").status_code == 401
     assert client.post("/v1/projects", json={"name": "x"}).status_code == 401
+
+
+def test_export_generates_prompt(client):
+    t1 = _token(USER1, "u1@example.com")
+    pid = client.post("/v1/projects", json={"name": "Export App"}, headers=h(t1)).json()["id"]
+
+    targets = client.get("/v1/export/targets", headers=h(t1)).json()
+    assert {t["id"] for t in targets} == {"claude_code", "codex", "cursor", "windsurf"}
+
+    r = client.post(
+        f"/v1/projects/{pid}/export",
+        json={"targetId": "cursor", "pattern": "protect", "language": "typescript"},
+        headers=h(t1),
+    )
+    assert r.status_code == 200
+    content = r.json()["content"]
+    assert "SECUREAI_PROTECT_KEY" in content
+    assert "/v1/protect" in content
+    assert "sk_protect_" not in content  # never embeds a real key

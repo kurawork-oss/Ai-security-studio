@@ -25,10 +25,15 @@
 | **SDK（Python `secureai` / JS `@secureai/sdk`）** | ✅ Python pytest・JS `tsc` ビルド |
 | **Export Module（Claude Code/Codex/Cursor/Windsurf）** | ✅ 実装・テスト済 |
 | **マルチプロバイダー（Gemini / Claude / OpenAI）** | ✅ アダプタ実装・テスト済 |
-| Plugin: PDF/Word/Excel/OCR/Audio/RAG/MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
+| **Plugin: PDF / Word / Excel 抽出** | ✅ `.[extractors]` で有効化・テスト済 |
+| Plugin: OCR / Audio / RAG / MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
 | Analytics 可視化（チャート） | ⏳ 次スライス |
 
-テスト: backend `pytest 41件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
+テスト: backend `pytest 45件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
+
+PDF/Word/Excel 抽出は optional。`pip install -e ".[extractors]"`（pypdf/python-docx/
+openpyxl）で有効化され、`GET /v1/plugins` の `available` が true になります。未導入時は
+stub 宣言のみ（`/v1/extract` は 400 を返す）。
 
 プロバイダーは `providers.provider_type` で解決（`gemini`/`claude`/`openai`/`echo`）。
 `openai` アダプタは OpenAI 互換（DeepSeek/Grok/local）にも流用可能。`default_model` は

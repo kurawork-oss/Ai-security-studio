@@ -124,16 +124,8 @@ class HtmlExtractor:
         return "\n".join(parser.parts)
 
 
-# Declared-but-not-yet-implemented plugins (install optional deps to enable).
+# Declared-but-not-yet-implemented plugins (need system deps or a vector store).
 STUB_MANIFESTS = [
-    PluginManifest("pdf", "extractor", description="PDF (needs pypdf)",
-                   content_types=("application/pdf",), available=False),
-    PluginManifest("docx", "extractor", description="Word (needs python-docx)",
-                   content_types=("application/vnd.openxmlformats-officedocument.wordprocessingml.document",),
-                   available=False),
-    PluginManifest("xlsx", "extractor", description="Excel (needs openpyxl)",
-                   content_types=("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",),
-                   available=False),
     PluginManifest("ocr-image", "extractor", description="OCR (needs tesseract)",
                    content_types=("image/png", "image/jpeg"), available=False),
     PluginManifest("audio-transcribe", "extractor", description="Audio (needs whisper)",
@@ -147,8 +139,15 @@ STUB_MANIFESTS = [
 
 
 def register_builtin_plugins(registry) -> None:
+    from .office_extractors import available_office_extractors, missing_office_manifests
+
     for extractor in (PlaintextExtractor(), CsvExtractor(), JsonExtractor(), HtmlExtractor()):
         registry.register_extractor(extractor)
+    # PDF/Word/Excel are available when their optional libs are installed.
+    for extractor in available_office_extractors():
+        registry.register_extractor(extractor)
+    for manifest in missing_office_manifests():
+        registry.register_manifest(manifest)
     # webhook delivery is a real plugin; registered by the container separately.
     for manifest in STUB_MANIFESTS:
         registry.register_manifest(manifest)

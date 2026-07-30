@@ -36,7 +36,7 @@ def test_extractors_produce_text():
 def test_plugins_listing(client):
     plugins = {p["key"]: p for p in client.get("/v1/plugins").json()}
     assert "plaintext" in plugins and "csv" in plugins and "webhook" in plugins
-    assert plugins["pdf"]["available"] is False  # declared stub
+    assert plugins["ocr-image"]["available"] is False  # declared stub (needs tesseract)
     assert plugins["csv"]["available"] is True
 
 
@@ -54,9 +54,10 @@ def test_extract_masks_from_html(client):
 
 
 def test_extract_unsupported_type(client):
+    # image/png is only a declared stub (no available extractor) -> 400.
     r = client.post(
         "/v1/extract",
-        json={"contentType": "application/pdf", "contentBase64": b64("x")},
+        json={"contentType": "image/png", "contentBase64": b64("x")},
         headers=auth(PROTECT_KEY),
     )
     assert r.status_code == 400

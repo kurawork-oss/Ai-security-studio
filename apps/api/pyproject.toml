@@ -26,6 +26,12 @@ presidio = [
     "spacy>=3.7",
     "ja-ginza",
 ]
+# Optional content-extractor plugins (PDF/Word/Excel). Install to enable.
+extractors = [
+    "pypdf>=4",
+    "python-docx>=1",
+    "openpyxl>=3",
+]
 dev = [
     "pytest>=8",
     "pytest-asyncio>=0.23",

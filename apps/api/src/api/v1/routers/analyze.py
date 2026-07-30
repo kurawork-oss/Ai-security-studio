@@ -5,7 +5,14 @@ import time
 from fastapi import APIRouter, Depends, Request
 
 from ....domain.value_objects import KeyType
-from ...deps import AuthContext, get_container, get_uow, guard_text_size, require_key
+from ...deps import (
+    AuthContext,
+    get_container,
+    get_uow,
+    guard_text_size,
+    require_key,
+    resolve_input_text,
+)
 from ..schemas import AnalyzeOptions, AnalyzeRequest, AnalyzeResponse, Usage
 
 router = APIRouter(tags=["data-plane"])
@@ -19,14 +26,20 @@ async def analyze(
     uow=Depends(get_uow),
 ) -> AnalyzeResponse:
     container = get_container(request)
-    guard_text_size(payload.text, container.settings)
+    text = resolve_input_text(
+        container,
+        text=payload.text,
+        content_type=payload.contentType,
+        content_base64=payload.contentBase64,
+    )
+    guard_text_size(text, container.settings)
 
     options = payload.options or AnalyzeOptions()
     selected = auth.runtime.provider(options.providerId)
 
     start = time.perf_counter()
     outcome = await container.analyze_uc.execute(
-        payload.text,
+        text,
         auth.runtime,
         provider_id=options.providerId,
         model=options.model,
@@ -40,7 +53,7 @@ async def analyze(
         request_id=request.state.request_id,
         status_code=200,
         latency_ms=latency_ms,
-        input_chars=len(payload.text),
+        input_chars=len(text),
         entity_counts=dict(outcome.protection.entity_counts),
         api_key_id=auth.key.id,
         provider_id=selected.id if selected else None,

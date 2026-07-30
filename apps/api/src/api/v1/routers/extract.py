@@ -14,22 +14,23 @@ from ...deps import (
     require_key,
     resolve_input_text,
 )
-from ..schemas import EntitySpan, ProtectRequest, ProtectResponse
+from ..schemas import EntitySpan, ExtractRequest, ExtractResponse
 
 router = APIRouter(tags=["data-plane"])
 
 
-@router.post("/protect", response_model=ProtectResponse)
-async def protect(
-    payload: ProtectRequest,
+@router.post("/extract", response_model=ExtractResponse)
+async def extract(
+    payload: ExtractRequest,
     request: Request,
     auth: AuthContext = Depends(require_key(KeyType.PROTECT)),
     uow=Depends(get_uow),
-) -> ProtectResponse:
+) -> ExtractResponse:
+    """Extract text from uploaded content and return it MASKED (never raw PII)."""
     container = get_container(request)
     text = resolve_input_text(
         container,
-        text=payload.text,
+        text=None,
         content_type=payload.contentType,
         content_base64=payload.contentBase64,
     )
@@ -58,7 +59,7 @@ async def protect(
     if options and options.returnEntities:
         entities = [EntitySpan(**s.public_dict()) for s in result.spans]
 
-    return ProtectResponse(
+    return ExtractResponse(
         maskedText=result.masked_text,
         requestId=request.state.request_id,
         entities=entities,

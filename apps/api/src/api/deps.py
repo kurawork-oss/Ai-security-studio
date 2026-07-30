@@ -7,6 +7,7 @@ Work is created per request and shared by the auth dependency and the router.
 
 from __future__ import annotations
 
+import base64
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, replace
 
@@ -14,6 +15,7 @@ from fastapi import Depends, Header, Request
 
 from ..application.analyze import AnalyzeTextUseCase
 from ..application.detect import DetectUseCase
+from ..application.extract import ExtractTextUseCase
 from ..application.protect import ProtectTextUseCase
 from ..core.auth import AuthUser, JwtVerifier
 from ..core.config import Settings
@@ -26,6 +28,9 @@ from ..infrastructure.crypto.keyprovider import build_cipher
 from ..infrastructure.db.session import create_engine, create_sessionmaker
 from ..infrastructure.db.uow import InMemoryUnitOfWork, PgUnitOfWork
 from ..infrastructure.pii.regex_detector import RegexPiiDetector
+from ..infrastructure.plugins.extractors import register_builtin_plugins
+from ..infrastructure.plugins.registry import PluginRegistry
+from ..infrastructure.plugins.webhook import WebhookPlugin
 from ..infrastructure.providers.echo import EchoAdapter
 from ..infrastructure.providers.gemini import GeminiAdapter
 from ..infrastructure.providers.registry import ProviderRegistry
@@ -51,6 +56,13 @@ class Container:
         self.protect_uc = ProtectTextUseCase(detector, anonymizer)
         self.detect_uc = DetectUseCase(detector)
         self.analyze_uc = AnalyzeTextUseCase(self.protect_uc, registry, self.cipher)
+
+        # Plugins (extractors + delivery). Heavy formats ship as declared stubs.
+        self.plugins = PluginRegistry()
+        register_builtin_plugins(self.plugins)
+        self.webhook = WebhookPlugin()
+        self.plugins.register_manifest(self.webhook.manifest)
+        self.extract_uc = ExtractTextUseCase(self.plugins)
 
         self.sessionmaker = None
         self._engine = None
@@ -149,6 +161,26 @@ def guard_text_size(text: str, settings: Settings) -> None:
             "Input text exceeds the maximum allowed size",
             details={"maxBytes": settings.api_text_max_bytes},
         )
+
+
+def resolve_input_text(
+    container: Container,
+    *,
+    text: str | None,
+    content_type: str | None,
+    content_base64: str | None,
+) -> str:
+    """Resolve request input to text: decode + run an extractor plugin for file
+    input, otherwise use the provided text."""
+    if content_base64:
+        if not content_type:
+            raise ValidationError("contentType is required with contentBase64")
+        try:
+            raw = base64.b64decode(content_base64, validate=True)
+        except (ValueError, TypeError) as exc:
+            raise ValidationError("contentBase64 is not valid base64") from exc
+        return container.extract_uc.execute(raw, content_type)
+    return text or ""
 
 
 def effective_rules(

@@ -127,9 +127,11 @@ Studio は Google AI Studio ライクな **管理コンソール**です。最�
 | DB マイグレーション + seed（Supabase・RLS） | ✅ 実 PostgreSQL 16 に適用・検証済 |
 | **Web: Dashboard（Projects/API Keys/Protect Rules/Providers）** | ✅ 管理 BFF 経由 |
 | Web: ランディング + **Protect Playground** | ✅ BFF でキー秘匿 |
-| SDK / Export / Plugin / マルチプロバイダー | ⏳ 次スライス |
+| **Plugin 基盤 + Extract / Batch / Streaming / Webhook** | ✅ 実装・テスト済 |
+| Plugin: PDF/Word/Excel/OCR/Audio/RAG/MCP | 🧩 宣言済（stub・optional 実装） |
+| SDK / Export / マルチプロバイダー実接続 | ⏳ 次スライス |
 
-テスト: **pytest 21件緑**（うち 4 件は実 Postgres 統合）／`next build` 通過／管理〜データ平面の E2E 確認済み。
+テスト: **pytest 29件緑**（うち 4 件は実 Postgres 統合）／`next build` 通過／管理〜データ平面〜Plugin の E2E 確認済み。
 実行方法は [開発ガイド](./docs/DEVELOPMENT.md) を参照。
 
 ## ドキュメント

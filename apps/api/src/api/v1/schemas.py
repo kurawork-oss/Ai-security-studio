@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class EntitySpan(BaseModel):
@@ -20,8 +20,18 @@ class ProtectOptions(BaseModel):
 
 
 class ProtectRequest(BaseModel):
-    text: str = Field(..., min_length=1)
+    # Provide either `text`, or a file via contentType + contentBase64
+    # (extracted to text by a plugin, then protected).
+    text: str | None = None
+    contentType: str | None = None
+    contentBase64: str | None = None
     options: ProtectOptions | None = None
+
+    @model_validator(mode="after")
+    def _require_source(self) -> "ProtectRequest":
+        if not self.text and not self.contentBase64:
+            raise ValueError("Provide either 'text' or 'contentBase64'")
+        return self
 
 
 class ProtectResponse(BaseModel):
@@ -50,8 +60,16 @@ class AnalyzeOptions(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
-    text: str = Field(..., min_length=1)
+    text: str | None = None
+    contentType: str | None = None
+    contentBase64: str | None = None
     options: AnalyzeOptions | None = None
+
+    @model_validator(mode="after")
+    def _require_source(self) -> "AnalyzeRequest":
+        if not self.text and not self.contentBase64:
+            raise ValueError("Provide either 'text' or 'contentBase64'")
+        return self
 
 
 class Usage(BaseModel):
@@ -63,3 +81,42 @@ class AnalyzeResponse(BaseModel):
     analysis: str
     requestId: str
     usage: Usage
+
+
+# ── Extract (extractor plugins; returns MASKED text — never raw PII) ──
+class ExtractRequest(BaseModel):
+    contentType: str
+    contentBase64: str = Field(..., min_length=1)
+    options: ProtectOptions | None = None
+
+
+class ExtractResponse(BaseModel):
+    maskedText: str
+    requestId: str
+    entities: list[EntitySpan] | None = None
+
+
+# ── Batch analyze ──
+class BatchAnalyzeRequest(BaseModel):
+    texts: list[str] = Field(..., min_length=1, max_length=100)
+    options: AnalyzeOptions | None = None
+
+
+class BatchAnalyzeItem(BaseModel):
+    analysis: str
+    usage: Usage
+
+
+class BatchAnalyzeResponse(BaseModel):
+    results: list[BatchAnalyzeItem]
+    requestId: str
+
+
+# ── Plugins ──
+class PluginOut(BaseModel):
+    key: str
+    category: str
+    version: str
+    description: str
+    contentTypes: list[str]
+    available: bool

@@ -7,6 +7,7 @@ is never called.
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 from ..core.errors import ProviderError, ValidationError
@@ -79,3 +80,40 @@ class AnalyzeTextUseCase:
             provider_type=provider.provider_type,
             model=response.model,
         )
+
+    async def stream(
+        self,
+        text: str,
+        runtime: ProjectRuntime,
+        *,
+        provider_id: str | None = None,
+        model: str | None = None,
+    ) -> AsyncIterator[str]:
+        """Stream the analysis. Anonymization runs eagerly here so that a
+        failure raises BEFORE any bytes are streamed (fail-closed)."""
+        protection = self._protect.execute(text, runtime.enabled_rules())
+
+        provider = runtime.provider(provider_id)
+        if provider is None:
+            raise ValidationError("No active provider configured for this project")
+        adapter = self._registry.get(provider.provider_type)
+
+        api_key: str | None = None
+        if provider.encrypted_key:
+            try:
+                api_key = self._cipher.decrypt(provider.encrypted_key)
+            except Exception as exc:
+                raise ProviderError("Failed to access provider credential") from exc
+
+        req = LlmRequest(prompt=protection.masked_text, model=model or provider.default_model)
+        stream_fn = getattr(adapter, "stream", None)
+
+        async def gen() -> AsyncIterator[str]:
+            if stream_fn is not None:
+                async for chunk in stream_fn(req, api_key=api_key):
+                    yield chunk
+            else:  # provider has no streaming: emit the full completion once
+                response = await adapter.complete(req, api_key=api_key)
+                yield response.text
+
+        return gen()

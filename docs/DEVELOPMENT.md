@@ -21,9 +21,19 @@
 | DB マイグレーション + seed（Supabase） | ✅ 実 PostgreSQL 16 に適用・検証済 |
 | Web: ランディング + Protect Playground | ✅ BFF 経由でキー秘匿 |
 | **Web: Dashboard（Projects/API Keys/Protect Rules/Providers）** | ✅ 管理 BFF 経由・`next build` 通過 |
-| SDK / Export / Plugin / マルチプロバイダー | ⏳ 次スライス |
+| **Plugin 基盤（Extractor/Delivery）+ Extract/Batch/Streaming/Webhook** | ✅ 実装・テスト済 |
+| Plugin: PDF/Word/Excel/OCR/Audio/RAG/MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
+| SDK / Export / マルチプロバイダー実接続 | ⏳ 次スライス |
 
-テスト: `pytest 21件緑`（うち 4 件は実 Postgres 統合）。`next build` 通過。管理〜データ平面の E2E 確認済み。
+テスト: `pytest 29件緑`（うち 4 件は実 Postgres 統合）。`next build` 通過。管理〜データ平面〜Plugin の E2E 確認済み。
+
+### Plugin エンドポイント
+
+- `GET /v1/plugins` — 利用可能プラグイン一覧（`available` フラグ）
+- `POST /v1/extract` — content（base64）→ 抽出 → **マスクして返却**（CSV/JSON/HTML/plaintext）
+- `POST /v1/protect` `/v1/analyze` — `contentType` + `contentBase64` でファイル入力も可
+- `POST /v1/batch/analyze` — 複数テキストの一括分析
+- `POST /v1/analyze/stream` — 逐次ストリーミング（匿名化は先行実行＝fail-closed）
 
 ## API（FastAPI）
 

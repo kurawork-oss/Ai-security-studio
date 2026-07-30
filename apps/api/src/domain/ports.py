@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from .entities import ApiKey, ProjectRuntime, ProtectRule
+from .entities import ApiKey, LogEntry, Project, ProjectRuntime, ProtectRule, Provider
 from .value_objects import LlmRequest, LlmResponse, PiiSpan, ProviderCapabilities
 
 
@@ -43,3 +43,73 @@ class ApiKeyRepository(Protocol):
 
 class ProjectRuntimeRepository(Protocol):
     async def get(self, project_id: str) -> ProjectRuntime | None: ...
+
+
+# ── Control plane (management) repositories ──
+
+
+class MembershipRepository(Protocol):
+    async def org_ids_for_user(self, user_id: str) -> list[str]: ...
+    async def default_org_for_user(self, user_id: str) -> str | None: ...
+
+
+class ProjectRepository(Protocol):
+    async def create(
+        self, org_id: str, name: str, slug: str, description: str | None = None
+    ) -> Project: ...
+    async def list_by_orgs(self, org_ids: list[str]) -> list[Project]: ...
+    async def get(self, project_id: str) -> Project | None: ...
+
+
+class ProviderRepository(Protocol):
+    async def create(
+        self,
+        project_id: str,
+        provider_type: str,
+        display_name: str,
+        default_model: str | None,
+        base_url: str | None,
+    ) -> Provider: ...
+    async def list_by_project(self, project_id: str) -> list[Provider]: ...
+    async def get(self, provider_id: str) -> Provider | None: ...
+    async def add_key(self, provider_id: str, encrypted_key: bytes, key_hint: str) -> None: ...
+
+
+class ApiKeyAdminRepository(Protocol):
+    async def create(
+        self,
+        project_id: str,
+        key_type: str,
+        name: str,
+        key_prefix: str,
+        key_hash: str,
+        rotated_from_id: str | None = None,
+    ) -> ApiKey: ...
+    async def list_by_project(self, project_id: str) -> list[ApiKey]: ...
+    async def get(self, key_id: str) -> ApiKey | None: ...
+    async def revoke(self, key_id: str) -> None: ...
+
+
+class ProtectRuleRepository(Protocol):
+    async def create_defaults(self, project_id: str) -> None: ...
+    async def list_by_project(self, project_id: str) -> list[ProtectRule]: ...
+    async def upsert_many(self, project_id: str, rules: list[ProtectRule]) -> None: ...
+
+
+class LogRepository(Protocol):
+    async def write(
+        self,
+        *,
+        project_id: str,
+        endpoint: str,
+        request_id: str | None,
+        status_code: int,
+        latency_ms: int,
+        input_chars: int,
+        entity_counts: dict[str, int],
+        api_key_id: str | None = None,
+        provider_id: str | None = None,
+        token_usage: dict | None = None,
+        error_code: str | None = None,
+    ) -> None: ...
+    async def list_by_project(self, project_id: str, limit: int = 50) -> list[LogEntry]: ...

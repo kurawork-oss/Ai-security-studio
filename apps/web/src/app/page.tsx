@@ -22,12 +22,12 @@ export default function Home() {
         >
           Protect Playground を試す →
         </Link>
-        <a
-          href="https://github.com/kurawork-oss/Ai-security-studio/tree/main/docs"
+        <Link
+          href="/projects"
           className="rounded-md border border-[var(--border)] px-4 py-2 text-sm hover:bg-black/5"
         >
-          設計ドキュメント
-        </a>
+          管理コンソール
+        </Link>
       </div>
 
       <section className="mt-12 grid gap-4 sm:grid-cols-2">

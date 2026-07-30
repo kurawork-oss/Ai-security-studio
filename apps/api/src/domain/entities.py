@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from .value_objects import AnonymizeAction, KeyType
 
@@ -12,6 +13,11 @@ class Project:
     id: str
     name: str
     org_id: str | None = None
+    slug: str = ""
+    description: str | None = None
+    environment: str = "dev"
+    status: str = "active"
+    created_at: datetime | None = None
 
 
 @dataclass
@@ -60,10 +66,26 @@ class ApiKey:
     key_hash: str
     status: str = "active"
     rotated_from_id: str | None = None
+    name: str = ""
+    created_at: datetime | None = None
+    last_used_at: datetime | None = None
+    revoked_at: datetime | None = None
 
     @property
     def is_active(self) -> bool:
         return self.status == "active"
+
+
+@dataclass
+class LogEntry:
+    id: str
+    endpoint: str
+    status_code: int | None
+    latency_ms: int | None
+    input_chars: int | None
+    entity_counts: dict[str, int]
+    error_code: str | None
+    created_at: datetime | None = None
 
 
 @dataclass

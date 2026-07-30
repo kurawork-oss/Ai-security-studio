@@ -113,20 +113,23 @@ Studio は Google AI Studio ライクな **管理コンソール**です。最�
 | PII 保護 | Microsoft Presidio / GiNZA / Regex |
 | AI | Gemini API（MVP）／ Claude・OpenAI・DeepSeek・Grok・Local（将来） |
 
-## 実装状況（スライス①）
+## 実装状況
 
-設計承認後、MVP のコア価値（PII 保護エンジン + Protect/Analyze API）から実装を開始しました。
+設計承認後、MVP を段階的に実装中です。
 
 | 領域 | 状態 |
 | --- | --- |
-| API: Protect / Analyze / Detect（FastAPI・Clean Architecture） | ✅ 実装・**テスト済**（pytest 17件緑） |
+| API: Protect / Analyze / Detect（FastAPI・Clean Architecture） | ✅ 実装・**テスト済** |
 | PII エンジン（Regex + Luhn/マイナンバー/法人番号検証・12種） | ✅ |
 | Provider Interface（echo / gemini）・フェイルクローズ | ✅ |
-| API キー（Protect/Analyze 分離・認可） | ✅ |
-| DB マイグレーション + seed（Supabase・RLS） | ✅（PG パーサ検証済／未適用） |
-| Web: ランディング + **Protect Playground**（BFF でキー秘匿） | ✅ 雛形（`next build` 通過・E2E 確認） |
-| 管理画面 CRUD / Supabase 結線 / SDK / Export / Plugin | ⏳ 次スライス |
+| API キー（Protect/Analyze 分離・ローテーション・認可） | ✅ |
+| **Postgres 永続化 + 管理 API（JWT・テナント分離）** | ✅ 実 PG で統合テスト |
+| DB マイグレーション + seed（Supabase・RLS） | ✅ 実 PostgreSQL 16 に適用・検証済 |
+| **Web: Dashboard（Projects/API Keys/Protect Rules/Providers）** | ✅ 管理 BFF 経由 |
+| Web: ランディング + **Protect Playground** | ✅ BFF でキー秘匿 |
+| SDK / Export / Plugin / マルチプロバイダー | ⏳ 次スライス |
 
+テスト: **pytest 21件緑**（うち 4 件は実 Postgres 統合）／`next build` 通過／管理〜データ平面の E2E 確認済み。
 実行方法は [開発ガイド](./docs/DEVELOPMENT.md) を参照。
 
 ## ドキュメント

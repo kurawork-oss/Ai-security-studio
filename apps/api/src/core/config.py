@@ -33,6 +33,14 @@ class Settings(BaseSettings):
     gemini_api_base: str = "https://generativelanguage.googleapis.com"
     gemini_default_model: str = "gemini-1.5-flash"
 
+    # ── Persistence ──
+    # When set, Postgres (Supabase) is used; otherwise the in-memory dev seed.
+    database_url: str | None = None
+
+    # ── Auth (Supabase JWT for the control plane) ──
+    supabase_jwt_secret: str | None = None       # HS256 secret (dev / legacy)
+    supabase_jwt_audience: str = "authenticated"
+
     # ── Crypto / KMS ──
     kms_provider: str = "env"
     encryption_kek: str = "dev-only-change-me-0123456789abcdef0123456789abcdef"
@@ -47,6 +55,10 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment.lower() in {"production", "prod"}
+
+    @property
+    def use_postgres(self) -> bool:
+        return bool(self.database_url)
 
     @property
     def cors_origin_list(self) -> list[str]:

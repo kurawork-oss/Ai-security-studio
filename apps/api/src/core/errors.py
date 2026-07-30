@@ -79,3 +79,10 @@ class ProviderError(AppError):
 class ProviderNotSupported(AppError):
     code = "PROVIDER_NOT_SUPPORTED"
     status_code = 400
+
+
+class DbRequired(AppError):
+    """Raised when a management endpoint is hit without Postgres configured."""
+
+    code = "DB_REQUIRED"
+    status_code = 501

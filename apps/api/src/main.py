@@ -5,6 +5,8 @@ Run (from apps/api): ``uvicorn src.main:app --reload``
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,6 +17,12 @@ from .core.logging import configure_logging
 from .core.middleware import RequestContextMiddleware, register_exception_handlers
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await app.state.container.aclose()
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level, json=settings.is_production)
@@ -23,6 +31,7 @@ def create_app() -> FastAPI:
         title="SecureAI Studio API",
         version="0.1.0",
         description="PII protection layer — Protect / Analyze / Detect",
+        lifespan=lifespan,
     )
     app.state.container = Container(settings)
 

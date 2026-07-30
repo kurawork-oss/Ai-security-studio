@@ -24,10 +24,15 @@
 | **Plugin 基盤（Extractor/Delivery）+ Extract/Batch/Streaming/Webhook** | ✅ 実装・テスト済 |
 | **SDK（Python `secureai` / JS `@secureai/sdk`）** | ✅ Python pytest・JS `tsc` ビルド |
 | **Export Module（Claude Code/Codex/Cursor/Windsurf）** | ✅ 実装・テスト済 |
+| **マルチプロバイダー（Gemini / Claude / OpenAI）** | ✅ アダプタ実装・テスト済 |
 | Plugin: PDF/Word/Excel/OCR/Audio/RAG/MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
-| マルチプロバイダー実接続 / Analytics 可視化 | ⏳ 次スライス |
+| Analytics 可視化（チャート） | ⏳ 次スライス |
 
-テスト: backend `pytest 34件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
+テスト: backend `pytest 41件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
+
+プロバイダーは `providers.provider_type` で解決（`gemini`/`claude`/`openai`/`echo`）。
+`openai` アダプタは OpenAI 互換（DeepSeek/Grok/local）にも流用可能。`default_model` は
+env かプロジェクト設定で指定（モデル名はハードコードしない）。
 
 ### Plugin エンドポイント
 

@@ -31,8 +31,10 @@ from ..infrastructure.pii.regex_detector import RegexPiiDetector
 from ..infrastructure.plugins.extractors import register_builtin_plugins
 from ..infrastructure.plugins.registry import PluginRegistry
 from ..infrastructure.plugins.webhook import WebhookPlugin
+from ..infrastructure.providers.claude import ClaudeAdapter
 from ..infrastructure.providers.echo import EchoAdapter
 from ..infrastructure.providers.gemini import GeminiAdapter
+from ..infrastructure.providers.openai import OpenAIAdapter
 from ..infrastructure.providers.registry import ProviderRegistry
 from ..infrastructure.repositories.memory import build_dev_seed
 
@@ -50,6 +52,16 @@ class Container:
         registry.register(EchoAdapter())
         registry.register(
             GeminiAdapter(settings.gemini_api_base, settings.gemini_default_model)
+        )
+        registry.register(
+            ClaudeAdapter(
+                settings.claude_api_base,
+                settings.claude_default_model,
+                api_version=settings.claude_api_version,
+            )
+        )
+        registry.register(
+            OpenAIAdapter(settings.openai_api_base, settings.openai_default_model)
         )
         self.registry = registry
 

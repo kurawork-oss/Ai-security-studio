@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     default_provider: str = "gemini"
     gemini_api_base: str = "https://generativelanguage.googleapis.com"
     gemini_default_model: str = "gemini-1.5-flash"
+    # Claude / OpenAI. Default models are intentionally empty — set them via env
+    # or per-provider (DB) so no model id is hardcoded here.
+    claude_api_base: str = "https://api.anthropic.com"
+    claude_api_version: str = "2023-06-01"
+    claude_default_model: str = ""
+    openai_api_base: str = "https://api.openai.com"
+    openai_default_model: str = ""
 
     # ── Persistence ──
     # When set, Postgres (Supabase) is used; otherwise the in-memory dev seed.

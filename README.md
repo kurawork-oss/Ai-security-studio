@@ -130,10 +130,11 @@ Studio は Google AI Studio ライクな **管理コンソール**です。最�
 | **Plugin 基盤 + Extract / Batch / Streaming / Webhook** | ✅ 実装・テスト済 |
 | **SDK（Python `secureai` / JS `@secureai/sdk`）** | ✅ Python テスト済・JS 型検証/ビルド通過 |
 | **Export Module（Claude Code/Codex/Cursor/Windsurf）** | ✅ 実装・テスト済 |
+| **マルチプロバイダー（Gemini / Claude / OpenAI）** | ✅ アダプタ実装・テスト済（DeepSeek/Grok/Local は OpenAI 互換で拡張可） |
 | Plugin: PDF/Word/Excel/OCR/Audio/RAG/MCP | 🧩 宣言済（stub・optional 実装） |
-| マルチプロバイダー実接続 / Analytics 可視化 | ⏳ 次スライス |
+| Analytics 可視化（チャート） | ⏳ 次スライス |
 
-テスト: **backend pytest 34件緑**（うち 4 件は実 Postgres 統合）＋ **Python SDK 5件**／`next build`・SDK `tsc` 通過。
+テスト: **backend pytest 41件緑**（うち 4 件は実 Postgres 統合）＋ **Python SDK 5件**／`next build`・SDK `tsc` 通過。
 実行方法は [開発ガイド](./docs/DEVELOPMENT.md) を参照。
 
 ## ドキュメント

@@ -144,3 +144,4 @@ Studio は Google AI Studio ライクな **管理コンソール**です。最�
 - 📘 [PRD（プロダクト要求仕様）](./docs/PRD.md) — 思想・位置付け・価値・スコープ
 - 🏛 [設計ドキュメント一式](./docs/architecture/README.md) — アーキテクチャ〜セキュリティ〜Playground
 - 🛠 [開発ガイド](./docs/DEVELOPMENT.md) — セットアップ・実行・実装状況
+- 🚀 [デプロイガイド](./docs/DEPLOYMENT.md) — Vercel（Web）+ コンテナ（API）+ Supabase

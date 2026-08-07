@@ -30,6 +30,9 @@ next-env.d.ts
 coverage/
 .cache/
 
+# Vercel
+.vercel/
+
 # Supabase local
 supabase/.branches/
 supabase/.temp/

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AccountMenu } from "@/components/account-menu";
 
 const NAV = [
   { href: "/projects", label: "Projects" },
@@ -28,9 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1">
         <header className="flex h-14 items-center justify-between border-b border-[var(--border)] px-6">
           <span className="text-sm text-[var(--muted)]">管理コンソール</span>
-          <Link href="/sign-in" className="text-sm text-[var(--muted)] hover:underline">
-            アカウント
-          </Link>
+          <AccountMenu />
         </header>
         <main className="p-6">{children}</main>
       </div>

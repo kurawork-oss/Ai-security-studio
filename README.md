@@ -133,10 +133,11 @@ Studio は Google AI Studio ライクな **管理コンソール**です。最�
 | **マルチプロバイダー（Gemini / Claude / OpenAI）** | ✅ アダプタ実装・テスト済（DeepSeek/Grok/Local は OpenAI 互換で拡張可） |
 | **Plugin: PDF / Word / Excel 抽出** | ✅ optional deps（`.[extractors]`）で有効化・テスト済 |
 | **Analytics 可視化（Dashboard）** | ✅ 統計タイル・種別内訳バー・ログ表示 |
+| **Supabase Auth（RS256/JWKS + HS256）** | ✅ バックエンド検証・フロントのセッション/サインアウト |
+| **CI（GitHub Actions）** | ✅ pytest / migrations / build を PR 自動実行 |
 | Plugin: OCR / Audio / RAG / MCP | 🧩 宣言済（stub・optional 実装） |
-| 本番 Supabase Auth 結線 / RS256 JWKS | ⏳ 今後 |
 
-テスト: **backend pytest 45件緑**（うち 4 件は実 Postgres 統合）＋ **Python SDK 5件**／`next build`・SDK `tsc` 通過。
+テスト: **backend pytest 51件緑**（うち 4 件は実 Postgres 統合）＋ **Python SDK 5件**／`next build`・SDK `tsc` 通過／**CI グリーン**。
 実行方法は [開発ガイド](./docs/DEVELOPMENT.md) を参照。
 
 ## ドキュメント

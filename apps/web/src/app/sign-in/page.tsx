@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authConfigured, supabase } from "@/lib/supabase";
 
 export default function SignIn() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -13,7 +15,11 @@ export default function SignIn() {
     const c = supabase();
     if (!c) return;
     const { error } = await c.auth.signInWithPassword({ email, password });
-    setMsg(error ? error.message : "サインインしました。/projects へ移動できます。");
+    if (error) {
+      setMsg(error.message);
+    } else {
+      router.push("/projects");
+    }
   }
 
   return (

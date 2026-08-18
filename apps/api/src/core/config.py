@@ -47,6 +47,17 @@ class Settings(BaseSettings):
     # ── Auth (Supabase JWT for the control plane) ──
     supabase_jwt_secret: str | None = None       # HS256 secret (dev / legacy)
     supabase_jwt_audience: str = "authenticated"
+    # Production Supabase uses asymmetric keys (RS256/ES256) served via JWKS.
+    supabase_url: str | None = None              # to derive the JWKS URL
+    supabase_jwt_jwks_url: str | None = None     # explicit override
+
+    @property
+    def jwks_url(self) -> str | None:
+        if self.supabase_jwt_jwks_url:
+            return self.supabase_jwt_jwks_url
+        if self.supabase_url:
+            return f"{self.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
+        return None
 
     # ── Crypto / KMS ──
     kms_provider: str = "env"

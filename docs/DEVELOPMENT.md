@@ -27,10 +27,14 @@
 | **マルチプロバイダー（Gemini / Claude / OpenAI）** | ✅ アダプタ実装・テスト済 |
 | **Plugin: PDF / Word / Excel 抽出** | ✅ `.[extractors]` で有効化・テスト済 |
 | **Analytics 可視化（Dashboard）** | ✅ 統計タイル・種別内訳バー・ログ |
+| **Supabase Auth（RS256/JWKS + HS256）** | ✅ バックエンド検証・フロントのセッション/サインアウト |
+| **CI（GitHub Actions）** | ✅ pytest / migrations / build を自動実行 |
 | Plugin: OCR / Audio / RAG / MCP | 🧩 マニフェスト宣言（stub・optional 実装） |
-| 本番 Supabase Auth 結線 / RS256 JWKS | ⏳ 今後 |
 
-テスト: backend `pytest 45件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc` 通過。
+テスト: backend `pytest 51件緑`（うち 4 件は実 Postgres 統合）＋ Python SDK `5件`。`next build`・SDK `tsc`・CI 通過。
+
+認証（管理 API）: トークンの `alg` に応じて **RS256/ES256（JWKS）** と **HS256（secret）** を
+自動選択。本番は `SECUREAI_SUPABASE_URL`（→ JWKS 自動解決）、開発は `SECUREAI_SUPABASE_JWT_SECRET`。
 
 PDF/Word/Excel 抽出は optional。`pip install -e ".[extractors]"`（pypdf/python-docx/
 openpyxl）で有効化され、`GET /v1/plugins` の `available` が true になります。未導入時は

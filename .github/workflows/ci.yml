@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: API (pytest + migrations)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: secureai_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      SECUREAI_TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/secureai_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install API dependencies
+        run: pip install -r apps/api/requirements.txt pytest pytest-asyncio
+
+      - name: Validate migrations apply on a fresh database
+        run: |
+          psql -h localhost -U postgres -c "CREATE DATABASE secureai_mig;"
+          for f in infra/supabase/local/00_local_shim.sql \
+                   infra/supabase/migrations/0001_init.sql \
+                   infra/supabase/migrations/0002_rls.sql \
+                   infra/supabase/seed.sql; do
+            psql -h localhost -U postgres -d secureai_mig -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Run tests
+        working-directory: apps/api
+        run: python -m pytest -q
+
+  sdk-python:
+    name: Python SDK (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install httpx pytest
+      - working-directory: packages/sdk-python
+        run: python -m pytest -q
+
+  web:
+    name: Web build + JS SDK typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install workspaces
+        run: npm ci
+      - name: Typecheck / build JS SDK
+        run: npm run build --workspace @secureai/sdk
+      - name: Build web
+        run: npm run build --workspace @secureai/web

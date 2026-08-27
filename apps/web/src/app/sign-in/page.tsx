@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { authConfigured, supabase } from "@/lib/supabase";
 
 export default function SignIn() {
@@ -15,49 +19,59 @@ export default function SignIn() {
     const c = supabase();
     if (!c) return;
     const { error } = await c.auth.signInWithPassword({ email, password });
-    if (error) {
-      setMsg(error.message);
-    } else {
-      router.push("/projects");
-    }
+    if (error) setMsg(error.message);
+    else router.push("/projects");
   }
 
   return (
-    <main className="mx-auto max-w-sm px-6 py-16">
-      <h1 className="text-2xl font-bold">サインイン</h1>
-
-      {!authConfigured ? (
-        <div className="mt-4 rounded-md border border-[var(--border)] p-4 text-sm text-[var(--muted)]">
-          Supabase Auth は未設定です（開発モード）。
-          <br />
-          管理 API は <code>SECUREAI_DEV_JWT</code> のフォールバックで動作します。
-          <div className="mt-3">
-            <Link href="/projects" className="text-brand">
-              → Projects へ
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-6 flex flex-col gap-3">
-          <input
-            className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-            placeholder="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            className="rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-            placeholder="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button onClick={signIn} className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white">
-            サインイン
-          </button>
-          {msg && <p className="text-sm text-[var(--muted)]">{msg}</p>}
-        </div>
-      )}
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>サインイン</CardTitle>
+          <CardDescription>SecureAI Studio 管理コンソール</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!authConfigured ? (
+            <div className="text-sm text-muted-foreground">
+              Supabase Auth は未設定です（開発モード）。管理 API は{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                SECUREAI_DEV_JWT
+              </code>{" "}
+              のフォールバックで動作します。
+              <div className="mt-4">
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/projects">Projects へ</Link>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pw">Password</Label>
+                <Input
+                  id="pw"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <Button className="w-full" onClick={signIn}>
+                サインイン
+              </Button>
+              {msg && <p className="text-sm text-destructive">{msg}</p>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

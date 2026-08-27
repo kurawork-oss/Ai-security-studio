@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, Boxes, KeyRound, Plus, ScrollText, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AnalyticsSummary,
   ApiKey,
@@ -59,9 +65,7 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
     await load();
   }
   function toggle(entityType: string) {
-    setRules((rs) =>
-      rs.map((r) => (r.entityType === entityType ? { ...r, enabled: !r.enabled } : r)),
-    );
+    setRules((rs) => rs.map((r) => (r.entityType === entityType ? { ...r, enabled: !r.enabled } : r)));
   }
   async function saveRules() {
     setRules(await api.updateRules(id, rules));
@@ -71,147 +75,201 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
     await load();
   }
 
-  if (error) return <p className="text-sm text-red-500">{error}</p>;
-  if (!project) return <p className="text-sm text-[var(--muted)]">読み込み中…</p>;
+  if (error) return <p className="text-sm text-destructive">{error}</p>;
+  if (!project) return <p className="text-sm text-muted-foreground">読み込み中…</p>;
+
+  const maxEntity = summary ? Math.max(1, ...Object.values(summary.entityCounts)) : 1;
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Link href="/projects" className="text-sm text-[var(--muted)]">
-        ← Projects
-      </Link>
-      <h1 className="mt-2 text-2xl font-bold">{project.name}</h1>
-      <p className="font-mono text-xs text-[var(--muted)]">{project.slug}</p>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" /> Projects
+        </Link>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight">{project.name}</h1>
+        <p className="font-mono text-xs text-muted-foreground">{project.slug}</p>
+      </div>
 
       {issued && (
-        <div className="mt-4 rounded-md border border-brand bg-brand/10 p-3 text-sm">
-          <p className="font-medium">API キーを発行しました（一度だけ表示されます）</p>
-          <code className="mt-1 block break-all">{issued.apiKey}</code>
-        </div>
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="pt-5">
+            <p className="text-sm font-medium">API キーを発行しました（この画面でのみ表示されます）</p>
+            <div className="mt-2 flex items-center gap-2">
+              <code className="flex-1 break-all rounded-md bg-background px-3 py-2 font-mono text-xs">
+                {issued.apiKey}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigator.clipboard?.writeText(issued.apiKey)}
+              >
+                コピー
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      <Section title="API Keys">
-        <div className="mb-3 flex gap-2">
-          <button onClick={() => issue("protect")} className="btn">
-            Protect キー発行
-          </button>
-          <button onClick={() => issue("analyze")} className="btn">
-            Analyze キー発行
-          </button>
-        </div>
-        <List
-          empty="キーがありません"
-          items={keys.map((k) => ({
-            key: k.id,
-            left: `${k.keyType} · ${k.keyPrefix}…`,
-            right:
-              k.status === "active" ? (
-                <button onClick={() => revoke(k.id)} className="text-xs text-red-500">
-                  失効
-                </button>
-              ) : (
-                <span className="text-xs text-[var(--muted)]">revoked</span>
-              ),
-          }))}
-        />
-      </Section>
+      {/* API Keys */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyRound className="size-4 text-primary" /> API Keys
+          </CardTitle>
+          <CardDescription>Protect / Analyze を分離して発行・失効します。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="protect">
+            <TabsList>
+              <TabsTrigger value="protect">Protect</TabsTrigger>
+              <TabsTrigger value="analyze">Analyze</TabsTrigger>
+            </TabsList>
+            {["protect", "analyze"].map((type) => (
+              <TabsContent key={type} value={type}>
+                <Button size="sm" className="mb-3" onClick={() => issue(type)}>
+                  <Plus className="size-4" /> {type} キー発行
+                </Button>
+                <KeyList keys={keys.filter((k) => k.keyType === type)} onRevoke={revoke} />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </CardContent>
+      </Card>
 
-      <Section title="Providers">
-        <button onClick={addEcho} className="btn mb-3">
-          Echo プロバイダー追加
-        </button>
-        <List
-          empty="プロバイダーがありません"
-          items={providers.map((p) => ({
-            key: p.id,
-            left: `${p.providerType} · ${p.displayName}`,
-            right: <span className="text-xs text-[var(--muted)]">{p.isActive ? "active" : "off"}</span>,
-          }))}
-        />
-      </Section>
-
-      <Section title="Protect Rules">
-        <div className="flex flex-wrap gap-2">
-          {rules.map((r) => (
-            <button
-              key={r.entityType}
-              onClick={() => toggle(r.entityType)}
-              className={`rounded-full border px-3 py-1 text-xs ${
-                r.enabled ? "border-brand bg-brand/10 text-brand" : "border-[var(--border)] text-[var(--muted)]"
-              }`}
-            >
-              {r.enabled ? "●" : "○"} {r.entityType}
-            </button>
-          ))}
-        </div>
-        <button onClick={saveRules} className="btn mt-3">
-          ルールを保存
-        </button>
-      </Section>
-
-      {summary && (
-        <Section title="Analytics">
-          <div className="grid grid-cols-3 gap-3">
-            <Stat label="リクエスト" value={String(summary.requests)} />
-            <Stat label="Protect 件数" value={String(summary.protectCount)} />
-            <Stat label="平均レイテンシ" value={`${summary.avgLatencyMs}ms`} />
-          </div>
-          {Object.keys(summary.entityCounts).length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-xs text-[var(--muted)]">検出内訳（種別別）</p>
-              {Object.entries(summary.entityCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([code, v]) => {
-                  const max = Math.max(...Object.values(summary.entityCounts));
-                  return <Bar key={code} label={code} value={v} pct={max ? (v / max) * 100 : 0} />;
-                })}
+      {/* Providers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Boxes className="size-4 text-primary" /> Providers
+          </CardTitle>
+          <CardDescription>LLM プロバイダー（Gemini / Claude / OpenAI / echo）。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button size="sm" variant="outline" className="mb-3" onClick={addEcho}>
+            <Plus className="size-4" /> Echo プロバイダー追加
+          </Button>
+          {providers.length === 0 ? (
+            <p className="text-sm text-muted-foreground">プロバイダーがありません。</p>
+          ) : (
+            <div className="divide-y rounded-md border">
+              {providers.map((p) => (
+                <div key={p.id} className="flex items-center justify-between p-3 text-sm">
+                  <span className="font-mono text-xs">
+                    {p.providerType} · {p.displayName}
+                  </span>
+                  <Badge variant={p.isActive ? "success" : "secondary"}>
+                    {p.isActive ? "active" : "off"}
+                  </Badge>
+                </div>
+              ))}
             </div>
           )}
-        </Section>
-      )}
+        </CardContent>
+      </Card>
 
-      {logs.length > 0 && (
-        <Section title="最近のログ（メタデータのみ）">
-          <div className="divide-y divide-[var(--border)] rounded-md border border-[var(--border)] text-sm">
-            {logs.map((l) => (
-              <div key={l.id} className="flex items-center justify-between p-2">
-                <span className="font-mono text-xs">
-                  {l.endpoint} · {l.statusCode}
-                </span>
-                <span className="text-xs text-[var(--muted)]">{l.latencyMs}ms</span>
-              </div>
+      {/* Protect Rules */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Protect Rules</CardTitle>
+          <CardDescription>検出・匿名化する PII 種別を切り替えます。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+            {rules.map((r) => (
+              <label
+                key={r.entityType}
+                className="flex cursor-pointer items-center justify-between gap-3"
+              >
+                <span className="font-mono text-xs">{r.entityType}</span>
+                <Switch checked={r.enabled} onCheckedChange={() => toggle(r.entityType)} />
+              </label>
             ))}
           </div>
-        </Section>
+          <Button size="sm" className="mt-5" onClick={saveRules}>
+            ルールを保存
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Analytics */}
+      {summary && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Analytics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
+              <Stat label="リクエスト" value={String(summary.requests)} />
+              <Stat label="Protect 件数" value={String(summary.protectCount)} />
+              <Stat label="平均レイテンシ" value={`${summary.avgLatencyMs}ms`} />
+            </div>
+            {Object.keys(summary.entityCounts).length > 0 && (
+              <div className="mt-5">
+                <p className="mb-2 text-xs text-muted-foreground">検出内訳（種別別）</p>
+                {Object.entries(summary.entityCounts)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([code, v]) => (
+                    <div key={code} className="mb-1.5 flex items-center gap-2 text-xs">
+                      <span className="w-40 shrink-0 font-mono">{code}</span>
+                      <span className="h-2 flex-1 overflow-hidden rounded bg-muted">
+                        <span
+                          className="block h-2 rounded bg-primary"
+                          style={{ width: `${Math.max(4, (v / maxEntity) * 100)}%` }}
+                        />
+                      </span>
+                      <span className="w-8 text-right text-muted-foreground">{v}</span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
-      <style>{`.btn{border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.8rem;font-size:0.8rem}`}</style>
+      {/* Logs */}
+      {logs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ScrollText className="size-4 text-primary" /> 最近のログ
+            </CardTitle>
+            <CardDescription>メタデータのみ（生 PII は保存しません）。</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y rounded-md border text-sm">
+              {logs.map((l) => (
+                <div key={l.id} className="flex items-center justify-between p-2.5">
+                  <span className="font-mono text-xs">
+                    {l.endpoint} · {l.statusCode}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{l.latencyMs}ms</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function KeyList({ keys, onRevoke }: { keys: ApiKey[]; onRevoke: (id: string) => void }) {
+  if (keys.length === 0) return <p className="text-sm text-muted-foreground">キーがありません。</p>;
   return (
-    <section className="mt-8">
-      <h2 className="mb-3 text-sm font-semibold">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function List({
-  items,
-  empty,
-}: {
-  items: { key: string; left: string; right: React.ReactNode }[];
-  empty: string;
-}) {
-  if (items.length === 0) return <p className="text-sm text-[var(--muted)]">{empty}</p>;
-  return (
-    <div className="divide-y divide-[var(--border)] rounded-md border border-[var(--border)]">
-      {items.map((i) => (
-        <div key={i.key} className="flex items-center justify-between p-3 text-sm">
-          <span className="font-mono text-xs">{i.left}</span>
-          {i.right}
+    <div className="divide-y rounded-md border">
+      {keys.map((k) => (
+        <div key={k.id} className="flex items-center justify-between p-3 text-sm">
+          <span className="font-mono text-xs">{k.keyPrefix}…</span>
+          {k.status === "active" ? (
+            <Button variant="ghost" size="sm" onClick={() => onRevoke(k.id)}>
+              <Trash2 className="size-4 text-destructive" />
+            </Button>
+          ) : (
+            <Badge variant="secondary">revoked</Badge>
+          )}
         </div>
       ))}
     </div>
@@ -220,24 +278,9 @@ function List({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[var(--border)] p-3">
+    <div className="rounded-lg border p-3">
       <div className="text-2xl font-bold">{value}</div>
-      <div className="text-xs text-[var(--muted)]">{label}</div>
-    </div>
-  );
-}
-
-function Bar({ label, value, pct }: { label: string; value: number; pct: number }) {
-  return (
-    <div className="mb-1 flex items-center gap-2 text-xs">
-      <span className="w-40 shrink-0 font-mono">{label}</span>
-      <span className="h-2 flex-1 rounded bg-black/5">
-        <span
-          className="block h-2 rounded bg-brand"
-          style={{ width: `${Math.max(4, pct)}%` }}
-        />
-      </span>
-      <span className="w-8 text-right text-[var(--muted)]">{value}</span>
+      <div className="text-xs text-muted-foreground">{label}</div>
     </div>
   );
 }

@@ -1,37 +1,16 @@
-import Link from "next/link";
 import { AccountMenu } from "@/components/account-menu";
-
-const NAV = [
-  { href: "/projects", label: "Projects" },
-  { href: "/playground", label: "Protect Playground" },
-];
+import { Sidebar } from "@/components/layout/sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
-      <aside className="w-56 shrink-0 border-r border-[var(--border)] p-4">
-        <Link href="/" className="block text-lg font-bold text-brand">
-          SecureAI
-        </Link>
-        <p className="mb-6 text-xs text-[var(--muted)]">Studio</p>
-        <nav className="flex flex-col gap-1">
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="rounded-md px-3 py-2 text-sm hover:bg-black/5"
-            >
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
-      <div className="flex-1">
-        <header className="flex h-14 items-center justify-between border-b border-[var(--border)] px-6">
-          <span className="text-sm text-[var(--muted)]">管理コンソール</span>
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-6 backdrop-blur">
+          <span className="text-sm font-medium text-muted-foreground">管理コンソール</span>
           <AccountMenu />
         </header>
-        <main className="p-6">{children}</main>
+        <main className="flex-1 px-6 py-8">{children}</main>
       </div>
     </div>
   );

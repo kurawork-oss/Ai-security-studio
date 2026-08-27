@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { api, Project } from "@/lib/mgmt";
+import { FolderKanban, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Project, api } from "@/lib/mgmt";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -39,42 +45,51 @@ export default function ProjectsPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold">Projects</h1>
-      <p className="mt-1 text-sm text-[var(--muted)]">
-        プロジェクト単位で Provider・API キー・Protect ルールを管理します。
-      </p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          プロジェクト単位で Provider・API キー・Protect ルールを管理します。
+        </p>
+      </div>
 
-      <div className="mt-6 flex gap-2">
-        <input
-          className="flex-1 rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+      <div className="flex gap-2">
+        <Input
           placeholder="新規プロジェクト名"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && create()}
         />
-        <button
-          onClick={create}
-          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white"
-        >
+        <Button onClick={create} disabled={!name.trim()}>
+          <Plus className="size-4" />
           作成
-        </button>
+        </Button>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
 
-      <div className="mt-6 divide-y divide-[var(--border)] rounded-md border border-[var(--border)]">
+      <div className="mt-6 space-y-2">
         {loading ? (
-          <p className="p-4 text-sm text-[var(--muted)]">読み込み中…</p>
+          [0, 1, 2].map((i) => <Skeleton key={i} className="h-[68px] w-full" />)
         ) : projects.length === 0 ? (
-          <p className="p-4 text-sm text-[var(--muted)]">まだありません。上で作成してください。</p>
+          <Card className="p-10 text-center">
+            <p className="text-sm font-medium">まだプロジェクトがありません</p>
+            <p className="mt-1 text-sm text-muted-foreground">上の入力欄から作成してください。</p>
+          </Card>
         ) : (
           projects.map((p) => (
-            <Link
-              key={p.id}
-              href={`/projects/${p.id}`}
-              className="flex items-center justify-between p-4 hover:bg-black/5"
-            >
-              <span className="font-medium">{p.name}</span>
-              <span className="font-mono text-xs text-[var(--muted)]">{p.slug}</span>
+            <Link key={p.id} href={`/projects/${p.id}`}>
+              <Card className="flex items-center justify-between p-4 transition-colors hover:bg-accent">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <FolderKanban className="size-4" />
+                  </span>
+                  <div>
+                    <div className="font-medium">{p.name}</div>
+                    <div className="font-mono text-xs text-muted-foreground">{p.slug}</div>
+                  </div>
+                </div>
+                <Badge variant="secondary">{p.environment}</Badge>
+              </Card>
             </Link>
           ))
         )}

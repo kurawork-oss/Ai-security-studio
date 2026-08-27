@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { authConfigured, supabase } from "@/lib/supabase";
 
 export function AccountMenu() {
@@ -24,21 +27,22 @@ export function AccountMenu() {
   }
 
   if (!authConfigured) {
-    return <span className="text-xs text-[var(--muted)]">dev モード</span>;
+    return <Badge variant="secondary">dev モード</Badge>;
   }
   if (!email) {
     return (
-      <Link href="/sign-in" className="text-sm text-[var(--muted)] hover:underline">
-        サインイン
-      </Link>
+      <Button asChild variant="outline" size="sm">
+        <Link href="/sign-in">サインイン</Link>
+      </Button>
     );
   }
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="text-[var(--muted)]">{email}</span>
-      <button onClick={signOut} className="text-[var(--muted)] hover:underline">
+    <div className="flex items-center gap-2">
+      <span className="hidden text-sm text-muted-foreground sm:inline">{email}</span>
+      <Button variant="ghost" size="sm" onClick={signOut}>
+        <LogOut className="size-4" />
         サインアウト
-      </button>
+      </Button>
     </div>
   );
 }

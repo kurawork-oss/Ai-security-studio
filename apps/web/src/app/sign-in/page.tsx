@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,8 +25,20 @@ export default function SignIn() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+    <main className="bg-canvas flex min-h-screen items-center justify-center p-6">
+      <div className="w-full max-w-sm">
+        <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
+          <span className="bg-brand flex size-9 items-center justify-center rounded-xl text-primary-foreground shadow-brand">
+            <ShieldCheck className="size-5" />
+          </span>
+          <span className="text-lg font-bold tracking-tight">
+            SecureAI
+            <span className="ml-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Studio
+            </span>
+          </span>
+        </Link>
+        <Card className="shadow-card-lg">
         <CardHeader>
           <CardTitle>サインイン</CardTitle>
           <CardDescription>SecureAI Studio 管理コンソール</CardDescription>
@@ -71,7 +84,8 @@ export default function SignIn() {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </main>
   );
 }

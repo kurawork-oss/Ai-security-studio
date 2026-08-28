@@ -72,7 +72,7 @@ export default function PlaygroundPage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm">保護後プレビュー</CardTitle>
-            {result && <Badge variant="secondary">検出 {detected}</Badge>}
+            {result && <Badge variant="success">検出 {detected}</Badge>}
           </CardHeader>
           <CardContent>
             <pre className="h-56 overflow-auto whitespace-pre-wrap rounded-md border bg-muted/40 p-3 text-sm">
@@ -102,10 +102,10 @@ export default function PlaygroundPage() {
                   key={e.code}
                   onClick={() => setRules((r) => ({ ...r, [e.code]: !r[e.code] }))}
                   className={cn(
-                    "rounded-full border px-3 py-1 text-xs transition-colors",
+                    "rounded-full border px-3 py-1 text-xs transition-all",
                     on
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent",
+                      ? "bg-brand-soft border-primary/30 font-medium text-primary shadow-sm"
+                      : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
                   )}
                 >
                   {on ? "●" : "○"} {e.label}

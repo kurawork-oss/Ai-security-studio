@@ -212,15 +212,15 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
                 {Object.entries(summary.entityCounts)
                   .sort((a, b) => b[1] - a[1])
                   .map(([code, v]) => (
-                    <div key={code} className="mb-1.5 flex items-center gap-2 text-xs">
-                      <span className="w-40 shrink-0 font-mono">{code}</span>
-                      <span className="h-2 flex-1 overflow-hidden rounded bg-muted">
+                    <div key={code} className="mb-2 flex items-center gap-3 text-xs">
+                      <span className="w-40 shrink-0 font-mono text-muted-foreground">{code}</span>
+                      <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
                         <span
-                          className="block h-2 rounded bg-primary"
+                          className="bg-brand block h-2.5 rounded-full"
                           style={{ width: `${Math.max(4, (v / maxEntity) * 100)}%` }}
                         />
                       </span>
-                      <span className="w-8 text-right text-muted-foreground">{v}</span>
+                      <span className="tnum w-8 text-right font-medium">{v}</span>
                     </div>
                   ))}
               </div>
@@ -278,9 +278,9 @@ function KeyList({ keys, onRevoke }: { keys: ApiKey[]; onRevoke: (id: string) =>
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border p-3">
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+    <div className="rounded-xl border bg-card p-4 shadow-sm">
+      <div className="text-gradient tnum text-3xl font-bold tracking-tight">{value}</div>
+      <div className="mt-0.5 text-xs text-muted-foreground">{label}</div>
     </div>
   );
 }

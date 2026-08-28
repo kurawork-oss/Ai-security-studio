@@ -5,8 +5,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-6 backdrop-blur">
+      <div className="bg-canvas flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/70 bg-background/70 px-6 backdrop-blur-md">
           <span className="text-sm font-medium text-muted-foreground">管理コンソール</span>
           <AccountMenu />
         </header>

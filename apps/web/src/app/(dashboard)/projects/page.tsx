@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FolderKanban, Plus } from "lucide-react";
+import { ChevronRight, FolderKanban, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -77,18 +77,21 @@ export default function ProjectsPage() {
           </Card>
         ) : (
           projects.map((p) => (
-            <Link key={p.id} href={`/projects/${p.id}`}>
-              <Card className="flex items-center justify-between p-4 transition-colors hover:bg-accent">
+            <Link key={p.id} href={`/projects/${p.id}`} className="block">
+              <Card className="hover-lift flex items-center justify-between p-4 hover:border-primary/30 hover:shadow-card-lg">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <FolderKanban className="size-4" />
+                  <span className="bg-brand-soft flex size-10 items-center justify-center rounded-xl text-primary ring-1 ring-inset ring-primary/15">
+                    <FolderKanban className="size-5" />
                   </span>
                   <div>
-                    <div className="font-medium">{p.name}</div>
+                    <div className="font-semibold tracking-tight">{p.name}</div>
                     <div className="font-mono text-xs text-muted-foreground">{p.slug}</div>
                   </div>
                 </div>
-                <Badge variant="secondary">{p.environment}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{p.environment}</Badge>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </div>
               </Card>
             </Link>
           ))

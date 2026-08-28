@@ -19,7 +19,7 @@ export default function Home() {
       {/* Hero */}
       <section className="container relative pt-16 pb-10 sm:pt-24">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-brand-soft px-3.5 py-1.5 text-xs font-medium text-primary shadow-sm">
+          <span className="inline-flex animate-in fade-in slide-in-from-bottom-2 items-center gap-2 rounded-full border border-primary/20 bg-brand-soft px-3.5 py-1.5 text-xs font-medium text-primary shadow-sm duration-500">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/60" />
               <span className="relative inline-flex size-2 rounded-full bg-primary" />
@@ -27,18 +27,18 @@ export default function Home() {
             AI Security Platform
           </span>
 
-          <h1 className="mt-6 text-balance text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
+          <h1 className="mt-6 animate-in fade-in slide-in-from-bottom-3 text-balance text-4xl font-bold leading-[1.1] tracking-tight duration-700 sm:text-6xl">
             AI へ送る前に、
             <br className="hidden sm:block" />
             <span className="text-gradient">必ず SecureAI を通す</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-6 max-w-xl animate-in fade-in slide-in-from-bottom-3 text-pretty text-lg leading-relaxed text-muted-foreground delay-100 duration-700 fill-mode-both">
             Gemini・Claude・OpenAI へデータを送る前に、PII（個人情報）を自動で検出・匿名化する
             <span className="font-medium text-foreground">共通セキュリティレイヤー</span>。
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-9 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-center justify-center gap-3 delay-200 duration-700 fill-mode-both">
             <Button asChild size="lg">
               <Link href="/playground">
                 <Sparkles className="size-4" />
@@ -53,7 +53,7 @@ export default function Home() {
             </Button>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+          <div className="mt-8 flex animate-in fade-in flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground delay-300 duration-700 fill-mode-both">
             <TrustItem icon={ShieldCheck} label="PII 12 種を検出・匿名化" />
             <TrustItem icon={Lock} label="AES-256-GCM 暗号化" />
             <TrustItem icon={FileLock2} label="生 PII は永続化しない" />
@@ -62,7 +62,7 @@ export default function Home() {
       </section>
 
       {/* Flow diagram */}
-      <section className="container pb-8">
+      <section className="container animate-in fade-in slide-in-from-bottom-4 pb-8 delay-300 duration-1000 fill-mode-both">
         <FlowDiagram />
       </section>
 

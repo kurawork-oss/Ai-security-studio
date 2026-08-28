@@ -1,0 +1,18 @@
+{
+  "name": "secureai-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SecureAI Studio — common PII protection layer for using AI safely",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "lint:web": "npm --workspace apps/web run lint"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

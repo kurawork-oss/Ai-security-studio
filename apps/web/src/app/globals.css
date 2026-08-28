@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 150 30% 99%;
+    --foreground: 200 18% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 18% 14%;
+    --primary: 158 64% 36%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 160 16% 96%;
+    --muted-foreground: 200 10% 44%;
+    --accent: 158 40% 95%;
+    --accent-foreground: 165 40% 18%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 165 18% 90%;
+    --input: 165 18% 88%;
+    --ring: 158 64% 40%;
+    --sidebar: 158 28% 98%;
+
+    /* Brand gradient — green → teal, stays in the green family */
+    --brand-from: 152 62% 42%;
+    --brand-to: 173 68% 37%;
+    /* Green-tinted shadow so cards feel grounded, not grey */
+    --shadow: 168 45% 22%;
+
+    --radius: 0.7rem;
+    --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
+      -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP",
+      sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 190 30% 6%;
+      --foreground: 165 20% 92%;
+      --card: 194 26% 9%;
+      --card-foreground: 165 20% 92%;
+      --primary: 158 60% 47%;
+      --primary-foreground: 190 40% 6%;
+      --muted: 195 18% 15%;
+      --muted-foreground: 175 12% 62%;
+      --accent: 168 30% 16%;
+      --accent-foreground: 158 40% 88%;
+      --destructive: 0 63% 54%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 190 16% 18%;
+      --input: 190 16% 20%;
+      --ring: 158 60% 47%;
+      --sidebar: 192 30% 7%;
+
+      --brand-from: 152 60% 48%;
+      --brand-to: 174 62% 44%;
+      --shadow: 190 60% 2%;
+    }
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer utilities {
+  /* Green→teal gradient fills */
+  .bg-brand {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--brand-from)),
+      hsl(var(--brand-to))
+    );
+  }
+  .bg-brand-soft {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--brand-from) / 0.12),
+      hsl(var(--brand-to) / 0.12)
+    );
+  }
+  .text-gradient {
+    background-image: linear-gradient(
+      120deg,
+      hsl(var(--brand-from)),
+      hsl(var(--brand-to))
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Layered, green-tinted elevation */
+  .shadow-card {
+    box-shadow:
+      0 1px 2px -1px hsl(var(--shadow) / 0.1),
+      0 4px 12px -4px hsl(var(--shadow) / 0.1);
+  }
+  .shadow-card-lg {
+    box-shadow:
+      0 2px 6px -2px hsl(var(--shadow) / 0.12),
+      0 12px 32px -8px hsl(var(--shadow) / 0.16);
+  }
+  .shadow-brand {
+    box-shadow:
+      0 1px 2px hsl(var(--brand-to) / 0.2),
+      0 8px 24px -6px hsl(var(--brand-to) / 0.35);
+  }
+
+  .hover-lift {
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Canvas: a soft brand glow over a faint dotted grid */
+  .bg-canvas {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(
+        900px 460px at 100% -8%,
+        hsl(var(--brand-to) / 0.08),
+        transparent 60%
+      ),
+      radial-gradient(
+        820px 420px at 0% -6%,
+        hsl(var(--brand-from) / 0.08),
+        transparent 60%
+      ),
+      radial-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      100% 100%,
+      22px 22px;
+    background-attachment: fixed, fixed, fixed;
+  }
+}

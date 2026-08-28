@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+*.egg-info/
+.eggs/
+next-env.d.ts
+*.tsbuildinfo
+.eslintcache
+
+# Env / secrets (never commit real values)
+.env
+.env.*
+!.env.example
+
+# Turborepo / caches
+.turbo/
+coverage/
+.cache/
+
+# Vercel
+.vercel/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

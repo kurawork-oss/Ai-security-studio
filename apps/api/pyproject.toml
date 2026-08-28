@@ -1,0 +1,58 @@
+[project]
+name = "secureai-api"
+version = "0.1.0"
+description = "SecureAI Studio — PII protection layer API (Protect / Analyze)"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "gunicorn>=21",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "httpx>=0.27",
+    "structlog>=24.1",
+    "python-dotenv>=1.0",
+    "cryptography>=42",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "pyjwt>=2.8",
+]
+
+[project.optional-dependencies]
+# Heavyweight NER stack. Not required to run the regex engine (MVP default).
+# Install to enable the Presidio + GiNZA backend for PERSON / LOCATION detection.
+presidio = [
+    "presidio-analyzer>=2.2",
+    "presidio-anonymizer>=2.2",
+    "spacy>=3.7",
+    "ja-ginza",
+]
+# Optional content-extractor plugins (PDF/Word/Excel). Install to enable.
+extractors = [
+    "pypdf>=4",
+    "python-docx>=1",
+    "openpyxl>=3",
+]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.9",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true

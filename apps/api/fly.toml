@@ -1,0 +1,29 @@
+# Fly.io deployment for the SecureAI API.
+# Deploy:  fly launch --no-deploy   (then edit app name/region) →  fly deploy
+# Secrets: fly secrets set SECUREAI_DATABASE_URL=... SECUREAI_SUPABASE_JWT_SECRET=... \
+#                          SECUREAI_ENCRYPTION_KEK=... SECUREAI_CORS_ORIGINS=https://<your-vercel-app>
+
+app = "secureai-api"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  SECUREAI_ENVIRONMENT = "production"
+  SECUREAI_DEV_SEED = "false"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/v1/health"
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"

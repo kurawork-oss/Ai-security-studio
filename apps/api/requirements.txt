@@ -1,0 +1,17 @@
+# Container/runtime dependencies (mirrors pyproject.toml + [extractors] + gunicorn).
+# Used by the Docker image. For local dev use: pip install -e ".[dev,extractors]"
+fastapi>=0.110
+uvicorn[standard]>=0.27
+gunicorn>=21
+pydantic>=2.6
+pydantic-settings>=2.2
+httpx>=0.27
+structlog>=24.1
+python-dotenv>=1.0
+cryptography>=42
+sqlalchemy[asyncio]>=2.0
+asyncpg>=0.29
+pyjwt>=2.8
+pypdf>=4
+python-docx>=1
+openpyxl>=3

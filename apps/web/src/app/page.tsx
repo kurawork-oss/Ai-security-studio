@@ -1,13 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Boxes,
-  FileLock2,
-  Lock,
-  Plug,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Boxes, Plug, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -17,84 +9,45 @@ export default function Home() {
       <SiteNav />
 
       {/* Hero */}
-      <section className="container relative pt-16 pb-10 sm:pt-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex animate-in fade-in slide-in-from-bottom-2 items-center gap-2 rounded-full border border-primary/20 bg-brand-soft px-3.5 py-1.5 text-xs font-medium text-primary shadow-sm duration-500">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/60" />
-              <span className="relative inline-flex size-2 rounded-full bg-primary" />
-            </span>
-            AI Security Platform
-          </span>
-
-          <h1 className="mt-6 animate-in fade-in slide-in-from-bottom-3 text-balance text-4xl font-bold leading-[1.1] tracking-tight duration-700 sm:text-6xl">
-            AI へ送る前に、
-            <br className="hidden sm:block" />
-            <span className="text-gradient">必ず SecureAI を通す</span>
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-xl animate-in fade-in slide-in-from-bottom-3 text-pretty text-lg leading-relaxed text-muted-foreground delay-100 duration-700 fill-mode-both">
-            Gemini・Claude・OpenAI へデータを送る前に、PII（個人情報）を自動で検出・匿名化する
-            <span className="font-medium text-foreground">共通セキュリティレイヤー</span>。
-          </p>
-
-          <div className="mt-9 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-center justify-center gap-3 delay-200 duration-700 fill-mode-both">
-            <Button asChild size="lg">
-              <Link href="/playground">
-                <Sparkles className="size-4" />
-                Protect Playground を試す
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/projects">
-                管理コンソール
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="mt-8 flex animate-in fade-in flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground delay-300 duration-700 fill-mode-both">
-            <TrustItem icon={ShieldCheck} label="PII 12 種を検出・匿名化" />
-            <TrustItem icon={Lock} label="AES-256-GCM 暗号化" />
-            <TrustItem icon={FileLock2} label="生 PII は永続化しない" />
-          </div>
+      <section className="container relative pt-20 pb-12 text-center sm:pt-28">
+        <h1 className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-3 text-balance text-4xl font-bold leading-[1.12] tracking-tight duration-700 sm:text-6xl">
+          AI へ送る前に、
+          <br className="hidden sm:block" />
+          <span className="text-gradient">必ず SecureAI を通す</span>
+        </h1>
+        <p className="mx-auto mt-5 max-w-md animate-in fade-in slide-in-from-bottom-3 text-pretty text-lg text-muted-foreground delay-100 duration-700 fill-mode-both">
+          個人情報を自動でマスクしてから、AI に送る。
+        </p>
+        <div className="mt-8 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-center justify-center gap-3 delay-200 duration-700 fill-mode-both">
+          <Button asChild size="lg">
+            <Link href="/playground">
+              <Sparkles className="size-4" />
+              試してみる
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/projects">
+              管理コンソール
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       </section>
 
-      {/* Flow diagram */}
-      <section className="container animate-in fade-in slide-in-from-bottom-4 pb-8 delay-300 duration-1000 fill-mode-both">
+      {/* Flow — how it works, at a glance */}
+      <section className="container animate-in fade-in slide-in-from-bottom-4 pb-16 delay-300 duration-1000 fill-mode-both">
+        <p className="mb-5 text-center text-sm font-medium text-muted-foreground">
+          個人情報は、AI に届く前にマスクされます
+        </p>
         <FlowDiagram />
       </section>
 
-      {/* Features */}
-      <section className="container py-16">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            2 つの使い方、1 つの安全な入口
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            既に AI を使う開発者にも、これから導入するチームにも。
-          </p>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-3">
-          <Feature
-            icon={ShieldCheck}
-            eyebrow="Pattern A"
-            title="Protect"
-            body="マスク済みデータを返し、送信は自分で。既存の AI 連携にそのまま差し込めます。"
-          />
-          <Feature
-            icon={Boxes}
-            eyebrow="Pattern B"
-            title="Analyze"
-            body="マスク → 登録済みプロバイダー → 分析結果まで。AI 未導入でもすぐに。"
-          />
-          <Feature
-            icon={Plug}
-            eyebrow="Extensible"
-            title="拡張性と安全性"
-            body="Provider / Rule / Plugin を後付け。監査ログはメタデータのみを保存。"
-          />
+      {/* Features — minimal */}
+      <section className="container pb-20">
+        <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-3">
+          <Feature icon={ShieldCheck} title="Protect" body="マスクして返す" />
+          <Feature icon={Boxes} title="Analyze" body="分析まで任せる" />
+          <Feature icon={Plug} title="拡張" body="後付けで機能追加" />
         </div>
       </section>
 
@@ -134,28 +87,13 @@ function SiteNav() {
   );
 }
 
-function TrustItem({
-  icon: Icon,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <Icon className="size-3.5 text-primary" />
-      {label}
-    </span>
-  );
-}
-
 function FlowDiagram() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="grid items-stretch gap-3 md:grid-cols-[1fr_auto_1.1fr_auto_1fr]">
-        {/* Source */}
-        <FlowCard tone="danger" label="あなたのデータ" title="生 PII を含む">
-          <div className="space-y-1.5 font-mono text-[11px] text-muted-foreground">
+        {/* Input */}
+        <FlowCard tone="danger" label="入力" title="生データ">
+          <div className="space-y-1 font-mono text-[11px] text-muted-foreground">
             <p>山田花子</p>
             <p>taro@example.com</p>
             <p>090-1234-5678</p>
@@ -170,28 +108,19 @@ function FlowDiagram() {
             <span className="bg-brand inline-flex size-9 items-center justify-center rounded-lg text-primary-foreground shadow-sm">
               <ShieldCheck className="size-5" />
             </span>
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-primary">
-              SecureAI
-            </p>
-            <p className="text-sm font-semibold">検出 → 匿名化</p>
-            <div className="mt-3 space-y-1.5 font-mono text-[11px]">
-              <p className="text-foreground">
-                <span className="text-gradient font-semibold">&lt;PERSON_1&gt;</span>
-              </p>
-              <p className="text-foreground">
-                <span className="text-gradient font-semibold">&lt;EMAIL_ADDRESS_1&gt;</span>
-              </p>
-              <p className="text-foreground">
-                <span className="text-gradient font-semibold">&lt;PHONE_NUMBER_1&gt;</span>
-              </p>
+            <p className="mt-3 text-sm font-semibold text-primary">SecureAI が自動マスク</p>
+            <div className="mt-3 space-y-1 font-mono text-[11px]">
+              <p className="text-gradient font-semibold">&lt;PERSON_1&gt;</p>
+              <p className="text-gradient font-semibold">&lt;EMAIL_ADDRESS_1&gt;</p>
+              <p className="text-gradient font-semibold">&lt;PHONE_NUMBER_1&gt;</p>
             </div>
           </div>
         </div>
 
         <FlowArrow />
 
-        {/* AI providers */}
-        <FlowCard tone="plain" label="安全に送信" title="AI プロバイダー">
+        {/* AI */}
+        <FlowCard tone="plain" label="送信" title="AI">
           <div className="flex flex-wrap gap-1.5">
             {["Gemini", "Claude", "OpenAI"].map((p) => (
               <span
@@ -247,26 +176,23 @@ function FlowArrow() {
 
 function Feature({
   icon: Icon,
-  eyebrow,
   title,
   body,
 }: {
   icon: React.ComponentType<{ className?: string }>;
-  eyebrow: string;
   title: string;
   body: string;
 }) {
   return (
     <Card className="hover-lift hover:border-primary/30 hover:shadow-card-lg">
-      <CardContent className="pt-6">
-        <span className="bg-brand-soft flex size-11 items-center justify-center rounded-xl text-primary ring-1 ring-inset ring-primary/15">
+      <CardContent className="flex items-center gap-3 py-5">
+        <span className="bg-brand-soft flex size-11 shrink-0 items-center justify-center rounded-xl text-primary ring-1 ring-inset ring-primary/15">
           <Icon className="size-5" />
         </span>
-        <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-primary">
-          {eyebrow}
-        </p>
-        <h3 className="mt-0.5 text-lg font-semibold tracking-tight">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+        <div>
+          <h3 className="font-semibold tracking-tight">{title}</h3>
+          <p className="text-sm text-muted-foreground">{body}</p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -282,9 +208,7 @@ function SiteFooter() {
           </span>
           <span className="font-semibold">SecureAI Studio</span>
         </div>
-        <p className="text-xs text-muted-foreground">
-          AI へ送る前に、必ず SecureAI を通す。
-        </p>
+        <p className="text-xs text-muted-foreground">AI へ送る前に、必ず SecureAI を通す。</p>
       </div>
     </footer>
   );

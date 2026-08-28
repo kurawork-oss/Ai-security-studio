@@ -119,7 +119,7 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
           <CardTitle className="flex items-center gap-2">
             <KeyRound className="size-4 text-primary" /> API Keys
           </CardTitle>
-          <CardDescription>Protect / Analyze を分離して発行・失効します。</CardDescription>
+          <CardDescription>Protect / Analyze を分けて発行。</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="protect">
@@ -145,7 +145,7 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
           <CardTitle className="flex items-center gap-2">
             <Boxes className="size-4 text-primary" /> Providers
           </CardTitle>
-          <CardDescription>LLM プロバイダー（Gemini / Claude / OpenAI / echo）。</CardDescription>
+          <CardDescription>LLM プロバイダー。</CardDescription>
         </CardHeader>
         <CardContent>
           <Button size="sm" variant="outline" className="mb-3" onClick={addEcho}>
@@ -174,7 +174,7 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
       <Card>
         <CardHeader>
           <CardTitle>Protect Rules</CardTitle>
-          <CardDescription>検出・匿名化する PII 種別を切り替えます。</CardDescription>
+          <CardDescription>マスクする PII 種別。</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
@@ -236,7 +236,7 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
             <CardTitle className="flex items-center gap-2">
               <ScrollText className="size-4 text-primary" /> 最近のログ
             </CardTitle>
-            <CardDescription>メタデータのみ（生 PII は保存しません）。</CardDescription>
+            <CardDescription>メタデータのみ（生 PII 非保存）。</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="divide-y rounded-md border text-sm">

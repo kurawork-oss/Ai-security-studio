@@ -42,7 +42,7 @@ export default function PlaygroundPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Protect Playground</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          貼り付け → ルール ON/OFF → 保護実行 → 置換をリアルタイムでプレビュー。
+          貼り付けて保護実行 → 置換をプレビュー。
         </p>
       </div>
 
